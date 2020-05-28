@@ -41,8 +41,16 @@ def Bragg_scattering(k, kr, theta, azimuth, u_10, fetch, spec_name='elfouhaily')
     ni = np.tan(ni)
     P = np.exp(-0.5 * (ni - np.mean(ni)) ** 2 / ni2) / np.sqrt(2 * np.pi * ni2)
 
+    P = P[np.arctan(ni)*180/np.pi>=0]
+    ni = ni[np.arctan(ni)*180/np.pi>=0]
+    nnk = ni.shape[0]
+    ni = ni.reshape(nnk,1)
+
+    # # local incidence angle
+    # theta_l = np.abs(theta - np.arctan(ni).reshape(nk, 1))
+    # kbr = 2*kr*np.sin(theta_l)
     # local incidence angle
-    theta_l = np.abs(theta - np.arctan(ni).reshape(nk, 1))
+    theta_l = np.abs(theta - np.arctan(ni).reshape(nnk, 1))
     kbr = 2*kr*np.sin(theta_l)
 
     # geometric scattering coefficients [Plant 1997] equation 5,6
@@ -54,9 +62,15 @@ def Bragg_scattering(k, kr, theta, azimuth, u_10, fetch, spec_name='elfouhaily')
 
     # 3-D Sk computed from kudryavtsev05
     if spec_name == 'kudryavtsev05':
-        Skk = np.zeros([nk, nphi, nazi])
-        for nn in np.arange(nk):
-            Skk[nn, :, :] = (specf(kbr[nn, :].reshape(nphi, 1), u_10, fetch, azimuth) / kbr[nn, :].reshape(nphi, 1) ** 4)  # equation 45
+        # Skk = np.zeros([nk, nphi, nazi])
+
+        Skk = np.zeros([nnk, nphi, nazi])
+        spec_Skk = specf(np.sort(kbr[0, :]).reshape(nphi, 1), u_10, fetch, azimuth) / np.sort(kbr[0, :]).reshape(nphi, 1) ** 4
+        for nn in np.arange(nnk):
+            sort_inc = kbr[nn, :]
+            Skk[nn, :, :] = spec_Skk[sort_inc.astype(int), :]
+        # for nn in np.arange(nk):
+        #     Skk[nn, :, :] = (specf(kbr[nn, :].reshape(nphi, 1), u_10, fetch, azimuth) / kbr[nn, :].reshape(nphi, 1) ** 4)  # equation 45
         inc = np.where(azimuth >= 0)[0]
         incc = np.linspace(1, inc[0], inc[0])
         inc = np.hstack((inc, incc))
@@ -80,9 +94,13 @@ def Bragg_scattering(k, kr, theta, azimuth, u_10, fetch, spec_name='elfouhaily')
         br0_vv = 16*np.pi*kr**4*Gvv*Skb_r
         br0_hh = 16*np.pi*kr**4*Ghh*Skb_r
 
+    # # Bragg scattering composite model
+    #     BR_vv = br0_vv*P.reshape(nk, 1)
+    #     BR_hh = br0_hh*P.reshape(nk, 1)
+
     # Bragg scattering composite model
-        BR_vv = br0_vv*P.reshape(nk, 1)
-        BR_hh = br0_hh*P.reshape(nk, 1)
+        BR_vv = br0_vv * P.reshape(nnk, 1)
+        BR_hh = br0_hh * P.reshape(nnk, 1)
 
     # integral over kbr >= kd
         VV = []
@@ -91,8 +109,10 @@ def Bragg_scattering(k, kr, theta, azimuth, u_10, fetch, spec_name='elfouhaily')
         for i in np.arange(nphi):
             a = np.tan(theta[i]-const.d / 2)
             b = np.tan(theta[i]+const.d / 2)
-            inte_vv = BR_vv[:, i].reshape(nk, 1)
-            inte_hh = BR_hh[:, i].reshape(nk, 1)
+            # inte_vv = BR_vv[:, i].reshape(nk, 1)
+            # inte_hh = BR_hh[:, i].reshape(nk, 1)
+            inte_vv = BR_vv[:, i].reshape(nnk, 1)
+            inte_hh = BR_hh[:, i].reshape(nnk, 1)
             vv = np.trapz(inte_vv[ni <= a], ni[ni <= a])+np.trapz(inte_vv[ni >= b], ni[ni >= b])
             hh = np.trapz(inte_hh[ni <= a], ni[ni <= a])+np.trapz(inte_hh[ni >= b], ni[ni >= b])
             VV.append(vv)
