@@ -47,6 +47,7 @@ def elfouhaily(k, theta, U_10, fetch):
     # Eq. 57
     Delta = np.tanh(a_0 + a_p*(cK/cK_p)**2.5 + a_m*(cK_m/cK)**2.5)
     # Eq. 49
-    G = np.where((theta > -np.pi/2.) & (theta < np.pi/2.), (1. + Delta*np.cos(2.*theta))/(np.pi), 0)
+    # G = np.where((theta > -np.pi/2.) & (theta < np.pi/2.), (1. + Delta*np.cos(2.*theta))/(np.pi), 0)
+    G = (1. + Delta * np.cos(2. * theta)) / (2*np.pi)
 
     return G
