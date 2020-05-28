@@ -34,7 +34,7 @@ class nrcs_bf():
         k = np.linspace(10 * k_min, const.ky, 1024)
 
         theta = np.linspace(1, 90, 90) * np.pi / 180  # 512
-        azimuth = np.linspace(-90, 90, 19) * np.pi / 180 # 1024
+        azimuth = np.linspace(-180, 180, 19*2-1) * np.pi / 180 # 1024
 
         sp = Specular_reflection(self.kr, theta, azimuth, self.u_10, self.fetch, spec_name = self.spec_name)
         wb, q = Wave_breaking(self.kr, theta, azimuth, self.u_10, self.fetch, spec_name = self.spec_name)
