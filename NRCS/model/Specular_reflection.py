@@ -32,7 +32,7 @@ def Specular_reflection(kr, theta, azimuth, u_10, fetch, spec_name='elfouhaily')
         spreadf = spread.models[spec_name]
         SSkdir = specf(kbr.reshape((nphi, 1)), u_10, fetch) * spreadf(kbr.reshape((nphi, 1)), phi, u_10, fetch)/kbr.reshape(nphi, 1) # equation 45
     else:
-        SSkdir = specf(kbr.reshape((nphi, 1)), u_10, fetch, phi) * kbr.reshape(nphi, 1) ** 4  # equation 45
+        SSkdir = specf(kbr.reshape((nphi, 1)), u_10, fetch, phi) / kbr.reshape(nphi, 1) ** 4  # equation 45
     # # mean square slope in upwind direction
     Sup = np.trapz(kbr.reshape(nphi, 1)**3*np.cos(phi)**2*SSkdir, phi, axis=1)
     # integration over k<kd
