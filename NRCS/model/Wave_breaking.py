@@ -34,12 +34,12 @@ def Wave_breaking(kr, theta, azimuth, u_10, fetch, spec_name = 'elfouhaily'):
     phi1 = (np.arange(nphi) * np.pi / nphi).reshape(1, nphi)-np.pi / 2 # in radians azimuth of breaking surface area: -pi/2,pi/2
     nk = 1024
     K = np.linspace(10 * spec_peak(u_10, fetch), knb, nk)
-#     K = np.linspace(spec_peak(u_10, fetch), knb, nk)
+    # K = np.linspace(spec_peak(u_10, fetch), knb, nk)
 
     if spec_name == 'elfouhaily':
         # Directional spectrum model name
         spreadf = spread.models[spec_name]
-        Bkdir = specf(K.reshape(nk, 1), u_10, fetch) * spreadf(K.reshape(nk, 1), phi1, u_10, fetch) * K.reshape(nk, 1)**2
+        Bkdir = specf(K.reshape(nk, 1), u_10, fetch) * spreadf(K.reshape(nk, 1), phi1, u_10, fetch) * K.reshape(nk, 1)**3
     else:
         Bkdir = specf(K.reshape(nk, 1), u_10, fetch, phi1)
 
@@ -50,12 +50,9 @@ def Wave_breaking(kr, theta, azimuth, u_10, fetch, spec_name = 'elfouhaily'):
     lamda_k = np.trapz(lamda_k, K)
     q = const.cq * lamda_k
 
-    if np.shape(azimuth) == ():
-        Awb = np.trapz(np.cos(phi1-azimuth)*lamda, phi1, axis=1)/lamda_k
-    else:
-        nazi = azimuth.shape[0]
-        Awb = np.trapz(np.cos(phi1 - azimuth.reshape(nazi, 1)) * lamda, phi1, axis=1) / lamda_k
-        Awb = Awb.reshape(nazi, 1)
+    nazi = azimuth.shape[0]
+    Awb = np.trapz(np.cos(phi1 - azimuth.reshape(nazi, 1)) * lamda, phi1, axis=1) / lamda_k
+    Awb = Awb.reshape(nazi, 1)
 
     WB = wb0.reshape(1, nphi)*(1+Mwb.reshape(1, nphi)*const.theta_wb*Awb)
     return WB, q
