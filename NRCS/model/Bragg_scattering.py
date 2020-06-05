@@ -41,8 +41,8 @@ def Bragg_scattering(k, kr, theta, azimuth, u_10, fetch, spec_name='elfouhaily')
     ni = np.tan(ni)
     P = np.exp(-0.5 * (ni - np.mean(ni)) ** 2 / ni2) / np.sqrt(2 * np.pi * ni2)
 
-    P = P[np.arctan(ni)*180/np.pi>=0]
-    ni = ni[np.arctan(ni)*180/np.pi>=0]
+#     P = P[np.arctan(ni)*180/np.pi>=0]
+#     ni = ni[np.arctan(ni)*180/np.pi>=0]
     nnk = ni.shape[0]
     ni = ni.reshape(nnk,1)
 
@@ -65,10 +65,12 @@ def Bragg_scattering(k, kr, theta, azimuth, u_10, fetch, spec_name='elfouhaily')
         # Skk = np.zeros([nk, nphi, nazi])
 
         Skk = np.zeros([nnk, nphi, nazi])
-        spec_Skk = specf(np.sort(kbr[0, :]).reshape(nphi, 1), u_10, fetch, azimuth) / np.sort(kbr[0, :]).reshape(nphi, 1) ** 4
+#         spec_Skk = specf(np.sort(kbr[0, :]).reshape(nphi, 1), u_10, fetch, azimuth) / np.sort(kbr[0, :]).reshape(nphi, 1) ** 4
         for nn in np.arange(nnk):
-            sort_inc = kbr[nn, :]
-            Skk[nn, :, :] = spec_Skk[sort_inc.astype(int), :]
+            # sort_inc = np.argsort(kbr[nn, :])
+            spec_Skk = specf(kbr[nn, :].reshape(nphi, 1), u_10, fetch, azimuth) / kbr[nn, :].reshape(nphi, 1) ** 4
+            # Skk[nn, :, :] = spec_Skk[sort_inc.astype(int), :]
+            Skk[nn, :, :] = spec_Skk
         # for nn in np.arange(nk):
         #     Skk[nn, :, :] = (specf(kbr[nn, :].reshape(nphi, 1), u_10, fetch, azimuth) / kbr[nn, :].reshape(nphi, 1) ** 4)  # equation 45
         inc = np.where(azimuth >= 0)[0]
