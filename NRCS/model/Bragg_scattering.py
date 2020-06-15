@@ -41,6 +41,9 @@ def Bragg_scattering(k, kr, theta, azimuth, u_10, fetch, spec_name='elfouhaily')
     ni = np.tan(ni)
     P = np.exp(-0.5 * (ni - np.mean(ni)) ** 2 / ni2) / np.sqrt(2 * np.pi * ni2)
 
+    angle_index = np.logical_and(-3 * 180 * np.arctan(np.sqrt(ni2)) / np.pi < np.arctan(ni) * 180 / np.pi, np.arctan(ni) * 180 / np.pi < 3 * 180 * np.arctan(np.sqrt(ni2)) / np.pi)
+    P = P[angle_index]
+    ni = ni[angle_index]
 #     P = P[np.arctan(ni)*180/np.pi>=0]
 #     ni = ni[np.arctan(ni)*180/np.pi>=0]
     nnk = ni.shape[0]
