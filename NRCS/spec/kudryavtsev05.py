@@ -122,8 +122,8 @@ def B_wdir(k, u_10, phi):
     for kk in k:
         km = min(kk/10, const.kwb)
         SW.append(np.trapz(ins[k < km], k[k < km]))
-    # SW = const.cb * np.asarray(SW).reshape(nk, 1) / (2 * const.alphag * omega)
-    SW = 4.5e-3 * np.asarray(SW).reshape(nk, 1) / omega
+    SW = const.cb * np.asarray(SW).reshape(nk, 1) / (2 * const.alphag * omega)
+#     SW = 4.5e-3 * np.asarray(SW).reshape(nk, 1) / omega
     cr_inc, up_inc, dow_inc= crup_inc(k, u_10, phi)
     B_crw = alpha * (SW / alpha) ** (1 / (n+1)) * np.ones((nk, cr_inc.shape[0]))
     b_v = beta_v(k, u_10, phi)
@@ -171,10 +171,10 @@ def B_ite(k, u_10, fetch, phi):
             km = min(kk / 10, const.kwb)
             SW.append(np.trapz(ins[k < km], k[k < km]))
             dSW.append(np.trapz(dins[k < km], k[k < km]))
-        # SW = const.cb * np.asarray(SW).reshape(nk, 1) / (2 * const.alphag * omega)
-        SW = 4.5e-3 * np.asarray(SW).reshape(nk, 1) / omega
-        # dSW = const.cb * np.asarray(dSW).reshape(nk, 1) / (2 * const.alphag * omega)
-        dSW = 4.5e-3 * np.asarray(dSW).reshape(nk, 1) / omega
+        SW = const.cb * np.asarray(SW).reshape(nk, 1) / (2 * const.alphag * omega)
+#         SW = 4.5e-3 * np.asarray(SW).reshape(nk, 1) / omega
+        dSW = const.cb * np.asarray(dSW).reshape(nk, 1) / (2 * const.alphag * omega)
+#         dSW = 4.5e-3 * np.asarray(dSW).reshape(nk, 1) / omega
 
         Q = b_v * BB0 - BB0 * (BB0 / alpha) ** n + SW
 
