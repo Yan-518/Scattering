@@ -156,7 +156,7 @@ def B_ite(k, u_10, fetch, phi):
     be = beta(k, u_10, phi)
 
     thres = 10
-    while thres > 1e-5:
+    while thres > 1e-6:
         # if np.shape(phi) == ():
         #     ins = be * BB0 * omega / k
         #     # ins = ins.reshape(nk, 1)
