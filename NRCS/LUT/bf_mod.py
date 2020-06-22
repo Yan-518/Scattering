@@ -53,5 +53,5 @@ class nrcs_bf():
             return nrcs_hh
 
 if __name__ == "__main__":
-    point = nrcs_bf(2*np.pi / 5.6e-2, 10*np.pi/180, 0, 'vv', 10, 500e+3, 'elfouhaily')
+    point = nrcs_bf(2*np.pi / 5.6e-2, 10*np.pi/180, 0, 'vv', 10, 500e+3, 'kudryavtsev05')
     print(point.nrcs())
