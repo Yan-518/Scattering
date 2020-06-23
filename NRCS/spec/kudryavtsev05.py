@@ -3,6 +3,8 @@ from NRCS import constants as const
 from scipy.special import erf
 from NRCS import spec
 from NRCS import spread
+import warnings
+warnings.filterwarnings("ignore")
 
 def fv(u_10):
     cg = np.sqrt((0.8 + 0.065*u_10) * 1e-3)  # drag coefficients
