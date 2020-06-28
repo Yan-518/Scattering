@@ -141,7 +141,7 @@ def Specular_reflection_new(K, kr, theta, azimuth, u_10, fetch, spec_name, tsc):
     RR = RR_vv
     SP = np.zeros([u_10.shape[0], u_10.shape[1], nazi, nphi])
     for ii in np.arange(u_10.shape[0]):
-        for jj in np.arange(u_10.shapee[1]):
+        for jj in np.arange(u_10.shape[1]):
             T = Trans_single(kbr.reshape(nphi, 1), K[ii, jj], u_10[ii, jj], fetch, azimuth, spec_name, divergence[ii, jj])
             if spec_name == 'elfouhaily':
                 spreadf = spread.models[spec_name]
