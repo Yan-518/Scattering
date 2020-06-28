@@ -33,7 +33,7 @@ def NRCS_before(k, kr, theta, azimuth, u_10, fetch, spec_name):
 def Bragg_scattering_new(k, K, kr, theta, azimuth, u_10, fetch, spec_name, tsc):
 
     nphi = theta.shape[0]
-    nk = k.shape[3]
+    nk = k.shape[2]
     nazi = azimuth.shape[0]
     kd = const.d*kr
     specf = spec.models[spec_name]
