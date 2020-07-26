@@ -5,6 +5,17 @@ from NRCS import spread
 from NRCS.spec.kudryavtsev05 import param
 from NRCS.spec.kudryavtsev05 import spec_peak
 
+def CP_breaking(theta):
+    nphi = theta.shape[0]
+    theta = theta.reshape(nphi, 1)
+    eps_sin = np.sqrt(const.epsilon_sw-np.sin(theta)**2)
+    Gvv = np.cos(theta)**2*(const.epsilon_sw-1)*(const.epsilon_sw*(1+np.sin(theta)**2) - np.sin(theta)**2) / (const.epsilon_sw*np.cos(theta)+eps_sin)**2
+    Ghh = np.cos(theta)**2*(const.epsilon_sw-1)/(np.cos(theta)+eps_sin)**2
+    G = (np.abs(Gvv-Ghh)**2).reshape(nphi, 1)
+    Bwb = 1e-2
+    WBcp = np.pi * G * const.Swb * Bwb / (2*np.tan(theta)**4*np.sin(theta)**2)
+    return WBcp
+
 def Wave_breaking(kr, theta, azimuth, u_10, fetch, spec_name = 'elfouhaily'):
     """
     :param kp:
@@ -49,10 +60,13 @@ def Wave_breaking(kr, theta, azimuth, u_10, fetch, spec_name = 'elfouhaily'):
     lamda = np.trapz(lamda, K, axis=0)
     lamda_k = np.trapz(lamda_k, K)
     q = const.cq * lamda_k
-
     nazi = azimuth.shape[0]
-    Awb = np.trapz(np.cos(phi1 - azimuth.reshape(nazi, 1)) * lamda, phi1, axis=1) / lamda_k
-    Awb = Awb.reshape(nazi, 1)
-
-    WB = wb0.reshape(1, nphi)*(1+Mwb.reshape(1, nphi)*const.theta_wb*Awb)
+    
+    if polarization == 'VH':
+        WB = np.ones([nazi, nphi])
+        WB = CP_breaking(theta)[:, 0] * WB
+    else:
+        Awb = np.trapz(np.cos(phi1 - azimuth.reshape(nazi, 1)) * lamda, phi1, axis=1) / lamda_k
+        Awb = Awb.reshape(nazi, 1)
+        WB = wb0.reshape(1, nphi)*(1+Mwb.reshape(1, nphi)*const.theta_wb*Awb)
     return WB, q
