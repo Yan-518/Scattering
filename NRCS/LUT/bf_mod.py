@@ -37,20 +37,14 @@ class nrcs_bf():
         azimuth = np.linspace(-180, 180, 19*2-1) * np.pi / 180 # 1024
 
         sp = Specular_reflection(self.kr, theta, azimuth, self.u_10, self.fetch, spec_name = self.spec_name)
-        wb, q = Wave_breaking(self.kr, theta, azimuth, self.u_10, self.fetch, spec_name = self.spec_name)
-        br_vv, br_hh = Bragg_scattering(k, self.kr, theta, azimuth, self.u_10, self.fetch, spec_name= self.spec_name)
+        wb, q = Wave_breaking(self.kr, theta, azimuth, self.u_10, self.fetch, spec_name = self.spec_name, polarizaton = self.pol)
+        br = Bragg_scattering(k, self.kr, theta, azimuth, self.u_10, self.fetch, spec_name = self.spec_name, polarization = self.pol)
 
-        theta = theta.reshape(1,90)
-        if self.pol == 'vv':
-            nrcs_vv = (br_vv + sp) * (1 - q) + wb * q
-            nrcs_vv = nrcs_vv[azimuth == self.azimuth]
-            nrcs_vv = nrcs_vv[theta == self.theta]
-            return nrcs_vv
-        elif self.pol == 'hh':
-            nrcs_hh = (br_hh + sp) * (1 - q) + wb * q
-            nrcs_hh = nrcs_hh[azimuth == self.azimuth]
-            nrcs_hh = nrcs_hh[theta == self.theta]
-            return nrcs_hh
+        theta = theta.reshape(1, 90)
+        nrcs = (br + sp) * (1 - q) + wb * q
+        nrcs = nrcs[azimuth == self.azimuth]
+        nrcs = nrcs[theta == self.theta]
+        return nrcs
 
 if __name__ == "__main__":
     point = nrcs_bf(2*np.pi / 5.6e-2, 10*np.pi/180, 0, 'vv', 10, 500e+3, 'kudryavtsev05')
