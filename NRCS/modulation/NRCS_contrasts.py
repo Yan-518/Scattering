@@ -9,28 +9,24 @@ from NRCS.model import Bragg_scattering
 from NRCS.model import Specular_reflection
 from NRCS.model import Wave_breaking
 
-def NRCS_before(k, kr, theta, azimuth, u_10, fetch, spec_name):
+def NRCS_before(k, kr, theta, azimuth, u_10, fetch, spec_name, polarization):
     nphi = theta.shape[0]
     nk = k.shape[2]
     nazi = azimuth.shape[0]
-    BR_VV = np.zeros([k.shape[0], k.shape[1], nazi, nphi])
-    BR_HH = np.zeros([k.shape[0], k.shape[1], nazi, nphi])
+    BR = np.zeros([k.shape[0], k.shape[1], nazi, nphi])
     SP = np.zeros([k.shape[0], k.shape[1], nazi, nphi])
     WB = np.zeros([k.shape[0], k.shape[1], nazi, nphi])
     q = np.zeros([k.shape[0], k.shape[1]])
     for ii in np.arange(k.shape[0]):
         for jj in np.arange(k.shape[1]):
-            BR_VV[ii, jj, :, :], BR_HH[ii, jj, :, :] = Bragg_scattering(k[ii, jj, :].reshape(nk, 1), kr, theta, azimuth, u_10[ii, jj], fetch, spec_name)
+            BR[ii, jj, :, :] = Bragg_scattering(k[ii, jj, :].reshape(nk, 1), kr, theta, azimuth, u_10[ii, jj], fetch, spec_name, polarization)
             SP[ii, jj, :, :] = Specular_reflection(kr, theta, azimuth, u_10[ii, jj], fetch, spec_name)
-            WB[ii, jj, :, :], q[ii, jj] = Wave_breaking(kr, theta, azimuth, u_10[ii, jj], fetch, spec_name)
+            WB[ii, jj, :, :], q[ii, jj] = Wave_breaking(kr, theta, azimuth, u_10[ii, jj], fetch, spec_name, polarization)
 
-    # Vertical polarization
-    NRCS_VV = (BR_VV + SP) * (1 - q) + WB * q
-    # Horizontal polarization
-    NRCS_HH = (BR_HH + SP) * (1 - q) + WB * q
-    return NRCS_VV, NRCS_HH
+    NRCS = (BR + SP) * (1 - q) + WB * q
+    return NRCS
 
-def Bragg_scattering_new(k, K, kr, theta, azimuth, u_10, fetch, spec_name, tsc):
+def Bragg_scattering_new(k, K, kr, theta, azimuth, u_10, fetch, spec_name, tsc, polarization):
 
     nphi = theta.shape[0]
     nk = k.shape[2]
@@ -49,8 +45,7 @@ def Bragg_scattering_new(k, K, kr, theta, azimuth, u_10, fetch, spec_name, tsc):
     inc = np.where(azimuth >= 0)[0]
     incc = np.linspace(1, inc[0], inc[0])
     inc = np.hstack((inc, incc))
-    BRVV = np.zeros([k.shape[0], k.shape[1], nazi, nphi])
-    BRHH = np.zeros([k.shape[0], k.shape[1], nazi, nphi])
+    BR = np.zeros([k.shape[0], k.shape[1], nazi, nphi])
     for ii in np.arange(k.shape[0]):
         for jj in np.arange(k.shape[1]):
             Skdir_ni = B_phi_new[ii, jj, :, :] / k[ii, jj, :].reshape(nk, 1) ** 4
@@ -68,10 +63,12 @@ def Bragg_scattering_new(k, K, kr, theta, azimuth, u_10, fetch, spec_name, tsc):
             kbr = 2*kr*np.sin(theta_l)
             # geometric scattering coefficients [Plant 1997] equation 5,6
             eps_sin = np.sqrt(const.epsilon_sw-np.sin(theta_l)**2)
-            Gvv = np.cos(theta_l)**2*(const.epsilon_sw-1)*(const.epsilon_sw*(1+np.sin(theta_l)**2) - np.sin(theta_l)**2) / (const.epsilon_sw*np.cos(theta_l)+eps_sin)**2
-            Gvv = np.abs(Gvv)**2
-            Ghh = np.cos(theta_l)**2*(const.epsilon_sw-1)/(np.cos(theta_l)+eps_sin)**2
-            Ghh = np.abs(Ghh)**2
+            if polarization == 'VV':
+                G = np.cos(theta_l)**2*(const.epsilon_sw-1)*(const.epsilon_sw*(1+np.sin(theta_l)**2) - np.sin(theta_l)**2) / (const.epsilon_sw*np.cos(theta_l)+eps_sin)**2
+                G = np.abs(G)**2
+            elif polarization == 'HH':
+                G = np.cos(theta_l)**2*(const.epsilon_sw-1)/(np.cos(theta_l)+eps_sin)**2
+                G = np.abs(G)**2
 
             # 3-D Sk computed from kudryavtsev05
             if spec_name == 'kudryavtsev05':
@@ -81,8 +78,7 @@ def Bragg_scattering_new(k, K, kr, theta, azimuth, u_10, fetch, spec_name, tsc):
                     T[nn, :] = Trans_single(kbr[nn, :].reshape(nphi, 1), K[ii, jj], u_10[ii, jj], fetch, azimuth, spec_name, divergence[ii, jj])
                     Skk[nn, :, :] = specf(kbr[nn, :].reshape(nphi, 1), u_10[ii, jj], fetch, azimuth) * (1 + np.abs(T[nn, :]))/ kbr[nn, :].reshape(nphi, 1) ** 4
                 Skk_pi = Skk[:, :, inc.astype(int)]
-            Br_VV = np.zeros([nazi, nphi])
-            Br_HH = np.zeros([nazi, nphi])
+            Br = np.zeros([nazi, nphi])
             for num in np.arange(nazi):
                 if spec_name == 'elfouhaily':
                     Sk = specf(kbr, u_10[ii, jj], fetch)
@@ -94,30 +90,21 @@ def Bragg_scattering_new(k, K, kr, theta, azimuth, u_10, fetch, spec_name, tsc):
                     Skb_pi = Skk_pi[:, :, num]
                 Skb_r = (Skb+Skb_pi) / 2 # Kudryavtsev 2003a equation 2
                 # pure Bragg scattering NRCS
-                br0_vv = 16*np.pi*kr**4*Gvv*Skb_r
-                br0_hh = 16*np.pi*kr**4*Ghh*Skb_r
+                br0 = 16*np.pi*kr**4*G*Skb_r
                 # Bragg scattering composite model
-                BR_vv = br0_vv * P.reshape(nnk, 1)
-                BR_hh = br0_hh * P.reshape(nnk, 1)
+                Brr = br0 * P.reshape(nnk, 1)
                 # integral over kbr >= kd
-                VV = []
-                HH = []
+                intebr = []
                 for i in np.arange(nphi):
                     a = np.tan(theta[i]-const.d / 2)
                     b = np.tan(theta[i]+const.d / 2)
-                    inte_vv = BR_vv[:, i].reshape(nnk, 1)
-                    inte_hh = BR_hh[:, i].reshape(nnk, 1)
-                    vv = np.trapz(inte_vv[ni <= a], ni[ni <= a])+np.trapz(inte_vv[ni >= b], ni[ni >= b])
-                    hh = np.trapz(inte_hh[ni <= a], ni[ni <= a])+np.trapz(inte_hh[ni >= b], ni[ni >= b])
-                    VV.append(vv)
-                    HH.append(hh)
-                VV = np.asarray(VV)
-                HH = np.asarray(HH)
-                Br_VV[num, :] = VV
-                Br_HH[num, :] = HH
-            BRVV[ii, jj, :, :] = Br_VV
-            BRHH[ii, jj, :, :] = Br_HH
-    return BRVV, BRHH
+                    inte = Brr[:, i].reshape(nnk, 1)
+                    vv = np.trapz(inte[ni <= a], ni[ni <= a])+np.trapz(inte[ni >= b], ni[ni >= b])
+                    intebr.append(vv)
+                intebr = np.asarray(intebr)
+                Br[num, :] = intebr
+            BR[ii, jj, :, :] = Br
+    return BR
 
 def Specular_reflection_new(K, kr, theta, azimuth, u_10, fetch, spec_name, tsc):
 
@@ -220,14 +207,13 @@ def Wave_breaking_new(K, kr, theta, azimuth, u_10, fetch, spec_name, tsc):
     return WB, q
 
 def NRCS_after(k, K, kr, theta, azimuth, u_10, fetch, spec_name, tsc):
-    BRVV, BRHH = Bragg_scattering_new(k, K, kr, theta, azimuth, u_10, fetch, spec_name, tsc)
+    BR = Bragg_scattering_new(k, K, kr, theta, azimuth, u_10, fetch, spec_name, tsc, polarization)
     SP = Specular_reflection_new(K, kr, theta, azimuth, u_10, fetch, spec_name, tsc)
     WB, q = Wave_breaking_new(K, kr, theta, azimuth, u_10, fetch, spec_name, tsc)
-    NRCS_VV_new = (BRVV + SP) * (1 - q) + WB * q
-    NRCS_HH_new = (BRHH + SP) * (1 - q) + WB * q
-    return NRCS_VV_new, NRCS_HH_new
+    NRCS_new = (BR + SP) * (1 - q) + WB * q
+    return NRCS_new
 
-def NRCS_contrasts(k, K, kr, theta, azimuth, u_10, fetch, spec_name, tsc):
-    VV_old, HH_old = NRCS_before(k, kr, theta, azimuth, u_10, fetch, spec_name)
-    VV_new, HH_new = NRCS_after(k, K, kr, theta, azimuth, u_10, fetch, spec_name, tsc)
-    return (VV_new - VV_old) / VV_old, (HH_new - HH_old) / HH_old
+def NRCS_contrasts(k, K, kr, theta, azimuth, u_10, fetch, spec_name, tsc, polarization):
+    old = NRCS_before(k, kr, theta, azimuth, u_10, fetch, spec_name, polarization)
+    new = NRCS_after(k, K, kr, theta, azimuth, u_10, fetch, spec_name, tsc, polarization)
+    return (new - old) / old
