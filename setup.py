@@ -5,7 +5,7 @@ setup(
     version='20.01',
     packages=['NRCS',
               'NRCS.constants',
-              'NRCS.constants',
+#               'NRCS.constants',
               'NRCS.model',
               'NRCS.spec',
               'NRCS.spread',
