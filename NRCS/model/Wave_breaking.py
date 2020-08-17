@@ -54,7 +54,7 @@ def Wave_breaking(kr, theta, azimuth, u_10, fetch, spec_name = 'elfouhaily'):
     else:
         Bkdir = specf(K.reshape(nk, 1), u_10, fetch, phi1)
 
-    n, alpha = param(K, u_10)
+    n, alpha = param(K, u_10, fetch)
     lamda = (Bkdir/alpha.reshape(nk, 1))**(n.reshape(nk, 1)+1)/(2*K.reshape(nk, 1)) # distribution of breaking front lengths
     lamda_k = np.trapz(lamda, phi1, axis=1)
     lamda = np.trapz(lamda, K, axis=0)
