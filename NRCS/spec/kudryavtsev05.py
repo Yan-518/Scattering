@@ -14,6 +14,28 @@ def fv(u_10):
 def rough(u_10):
     return 0.018 * fv(u_10) ** 2 / const.g + 0.1 * const.v_air / fv(u_10)
 
+def spec_peak(u_10, fetch):
+    X_0 = 22e3  # Dimensionless fetch
+    k_0 = const.g / u_10 ** 2
+    # Eq. 4 (below)
+    X = k_0 * fetch
+    # Eq. 37: Inverse wave age
+    Omega_c = 0.84 * np.tanh((X / X_0) ** (0.4)) ** (-0.75)
+    # Eq. 3 (below)
+    kp = k_0 * Omega_c ** 2
+    return kp
+
+def Cb(u_10, fetch):
+    nk = 1024
+    k_min = spec_peak(u_10, fetch)
+    k = np.linspace(k_min, const.ky, nk)
+    c = np.sqrt(const.g / k + const.gamma * k / const.rho_water)  # phase velocity
+    U = fv(u_10)  # friction velocity
+    Cb = 1.5 * (const.rho_air / const.rho_water) * (np.log(np.pi / (k * rough(u_10))) / const.kappa - c / U)
+    Cb = np.where(Cb > 0, Cb, 0)
+    Cb = np.mean(Cb[const.kwb <= k][k[const.kwb <= k] <= const.ky / 2])
+    return Cb
+
 def beta(k, u_10, phi):
     """
     Equation (17) in Kudryatvtsev 2005
@@ -74,39 +96,23 @@ def crup_inc(k, u_10, phi):
 def func_f(k, k_num):
     return (1 + np.tanh(2 * (np.log(k) - np.log(k_num / 4)))) / 2
 
-def param(k, u_10):
+def param(k, u_10, fetch):
     #   computing tuning parameters
     n = []
     alpha = []
     ng = 5
-    c = np.sqrt(const.g / k + const.gamma * k / const.rho_water)  # phase velocity
-    U = fv(u_10)  # friction velocity
-    # Cb = 1.5 * (const.rho_air / const.rho_water) * (np.log(np.pi / (k * rough(u_10))) / const.kappa - c / U)
-    # Cb = np.where(Cb > 0, Cb, 0)
-    # Cb = np.mean(Cb[const.kwb <= k][k[const.kwb <= k] <= const.ky / 2])
-    Cb = 0.020636914315062066
+    C_b = Cb(u_10, fetch)
     a = 2.5e-3
     f = func_f(k, const.ky)
     n = (1 - 1 / ng) * f + 1 / ng
     n = 1 / n
-    alpha = np.log(a) - np.log(Cb) / n
+    alpha = np.log(a) - np.log(C_b) / n
     alpha = np.exp(alpha)
     return n, alpha
 
-def spec_peak(u_10, fetch):
-    X_0 = 22e3  # Dimensionless fetch
-    k_0 = const.g / u_10 ** 2
-    # Eq. 4 (below)
-    X = k_0 * fetch
-    # Eq. 37: Inverse wave age
-    Omega_c = 0.84 * np.tanh((X / X_0) ** (0.4)) ** (-0.75)
-    # Eq. 3 (below)
-    kp = k_0 * Omega_c ** 2
-    return kp
-
-def B0(k, u_10, phi):
+def B0(k, u_10, phi, fetch):
     # nk = k.shape[0]
-    n, alpha = param(k, u_10)
+    n, alpha = param(k, u_10, fetch)
     b_v = beta_v(k, u_10, phi)
     b_v = np.where(b_v > 0, b_v, 0)
     B_ref = alpha * b_v ** (1 / n)
@@ -116,8 +122,8 @@ def B_wdir(k, u_10, phi):
     nk = k.shape[0]
     nphi = phi.shape[0]
     omega = np.sqrt(const.g * k + const.gamma * k ** 3/const.rho_water)
-    n, alpha = param(k, u_10)
-    B_ref = B0(k, u_10, phi)
+    n, alpha = param(k, u_10, fetch)
+    B_ref = B0(k, u_10, phi, fetch)
     be = beta(k, u_10, phi)
     ins = np.trapz(be * B_ref * omega / k, phi, axis = 1).reshape(nk, 1)
     SW = []
@@ -139,7 +145,7 @@ def B_wdir(k, u_10, phi):
 def B_dir(k, u_10, fetch, phi):
     nk = k.shape[0]
     b_v = beta_v(k, u_10, phi)
-    B_ref = B0(k, u_10, phi)
+    B_ref = B0(k, u_10, phi, fetch)
     B_crw, B_upw = B_wdir(k, u_10, phi)
     Bk_h = b_v
     cr_inc, up_inc, dow_inc = crup_inc(k, u_10, phi)
@@ -152,7 +158,7 @@ def B_ite(k, u_10, fetch, phi):
     dd = 1e-2
     nk = k.shape[0]
     BB0 = B_dir(k.reshape(nk, 1), u_10, fetch, phi)
-    n, alpha = param(k.reshape(nk, 1), u_10)
+    n, alpha = param(k.reshape(nk, 1), u_10, fetch)
     omega = np.sqrt(const.g * k + const.gamma * k ** 3 / const.rho_water)
     b_v = beta_v(k.reshape(nk, 1), u_10, phi)
     be = beta(k, u_10, phi)
@@ -203,7 +209,7 @@ def Bpc(k, u_10, fetch, phi):
     B0kg = B_ite(kg, u_10, fetch, phi)
     B0kg = np.flipud(B0kg)
     Ipc = bekg * B0kg * func_phi
-    n, alpha = param(k.reshape(nk, 1), u_10)
+    n, alpha = param(k.reshape(nk, 1), u_10, fetch)
     omega = np.sqrt(const.g * k + const.gamma * k ** 3/const.rho_water)
     Bpcc = alpha * (-4 * const.v * k ** 2 / omega + np.sqrt((4 * const.v * k ** 2 / omega)**2 + 4 * Ipc / alpha)) / 2
     return Bpcc
