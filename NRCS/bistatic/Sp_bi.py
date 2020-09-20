@@ -83,9 +83,9 @@ def Sp_bi(kr, theta_i, theta_s, theta_eq, eq_azi, u_10, fetch, spec_name, polari
         poli = 0
     bist_ang_az = 2 * eq_azi
     # polarization for the mono-static equivalent
-    (rot_ang_1, rot_ang_2, rot_ang_tot, Ps1, Ps2, Ps_tot) = elfouhaily(poli, eq_azi, theta_i, eq_azi, theta_i)
+    (rot_ang_1, rot_ang_2, rot_ang_tot, Ps1, Ps2, Ps_tot) = elfouhaily(poli, np.degrees(eq_azi), np.degrees(theta_i), np.degrees(eq_azi), np.degrees(theta_i))
     Ps1_eq_norm = np.linalg.norm(Ps1, axis=-1)
-    (rot_ang_1, rot_ang_2, rot_ang_tot, Ps1, Ps2, Ps_tot) = elfouhaily(poli, 0, theta_i, bist_ang_az, theta_s)
+    (rot_ang_1, rot_ang_2, rot_ang_tot, Ps1, Ps2, Ps_tot) = elfouhaily(poli, 0, np.degrees(theta_i), np.degrees(bist_ang_az), np.degrees(theta_s))
     Ps1_bi_norm = np.linalg.norm(Ps1, axis=-1)
     # transfer function
     M = Ps1_bi_norm ** 2 / Ps1_eq_norm ** 2
