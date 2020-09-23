@@ -32,7 +32,7 @@ def eq_wb(kr, theta_eq, eq_azi, u_10, fetch, spec_name):
     Mwb = np.gradient(wb0, dtheta)/wb0
 
     # distribution function
-    phi1 = (np.arange(nphi) * np.pi / nphi).reshape(1, nphi)-np.pi / 2 # in radians azimuth of breaking surface area: -pi/2,pi/2
+    phi1 = np.linspace(-np.pi, np.pi, nphi) # in radians azimuth of breaking surface area: -pi/2,pi/2
     nk = 1024
     K = np.linspace(10 * spec_peak(u_10, fetch), knb, nk)
     # K = np.linspace(spec_peak(u_10, fetch), knb, nk)
