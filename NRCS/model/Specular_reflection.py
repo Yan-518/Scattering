@@ -25,7 +25,8 @@ def Specular_reflection(kr, theta, azimuth, u_10, fetch, spec_name='elfouhaily')
     # Omni directional spectrum model name
     specf = spec.models[spec_name]
 
-    phi = (np.arange(nphi) * np.pi / nphi).reshape(1, nphi) - np.pi / 2  # in radians wave direction relative to the wind
+    # in radians wave direction relative to the wind
+    phi = np.linspace(-np.pi, np.pi, nphi)
 
     if spec_name == 'elfouhaily':
         # Directional spectrum model name
