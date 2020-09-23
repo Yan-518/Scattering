@@ -1,6 +1,5 @@
 import numpy as np
 from NRCS import constants as const
-from scipy.special import erf
 from NRCS import spec
 from NRCS import spread
 import warnings
@@ -76,21 +75,15 @@ def beta_v(k, u_10, phi):
 def crup_inc(k, u_10, phi):
     b_v = beta_v(k, u_10, phi)
     nphi = phi.shape[0]
-    neg = np.where(b_v[0, :] < 0)[0]
-    neg_num = neg.shape[0]/2
-    if nphi % 2 == 1:
-        nphi = (nphi +1) / 2
-        cr_num = (neg_num - (nphi+1)/2)*2+1
-    else:
-        nphi = nphi / 2
-        cr_num = (neg_num - nphi/2)*2
-    p_cr = neg[int(neg_num):][:int(cr_num)]
-    n_cr = neg[:int(neg_num)][-int(cr_num):]
-    cr_inc = np.hstack((n_cr, p_cr))
-    p_up = neg[int(neg_num):][int(cr_num):]
-    n_up = neg[:int(neg_num)][:-int(cr_num)]
-    up_inc = np.hstack((n_up, p_up))
     dow_inc = np.where(b_v[0, :] > 0)[0]
+    if dow_inc.shape[0] == nphi:
+        cr_inc = np.arange(0)
+        up_inc = np.arange(0)
+    else:
+        neg = np.where(b_v[np.where(k == k.min())[0][0], :] < 0)[0]
+        cr_ed = np.cos(phi[neg]).max()
+        cr_inc = np.where(np.logical_and(np.cos(phi)<=cr_ed, np.cos(phi)>=-cr_ed))[0]
+        up_inc = np.where(np.cos(phi)<-cr_ed)[0]
     return cr_inc, up_inc, dow_inc
 
 def func_f(k, k_num):
@@ -118,7 +111,7 @@ def B0(k, u_10, phi, fetch):
     B_ref = alpha * b_v ** (1 / n)
     return B_ref
 
-def B_wdir(k, u_10, phi):
+def B_wdir(k, u_10, phi, fetch):
     nk = k.shape[0]
     nphi = phi.shape[0]
     omega = np.sqrt(const.g * k + const.gamma * k ** 3/const.rho_water)
@@ -129,10 +122,11 @@ def B_wdir(k, u_10, phi):
     SW = []
     for kk in k:
         km = min(kk/10, const.kwb)
-        SW.append(np.trapz(ins[k < km], k[k < km]))
+        # SW.append(np.trapz(ins[k < km], k[k < km]))
+        SW.append(np.trapz(np.sort(ins[k < km]), np.sort(k[k < km])))
     SW = const.cb * np.asarray(SW).reshape(nk, 1) / (2 * const.alphag * omega)
-#     SW = 4.5e-3 * np.asarray(SW).reshape(nk, 1) / omega
-    cr_inc, up_inc, dow_inc= crup_inc(k, u_10, phi)
+    # SW = 4.5e-3 * np.asarray(SW).reshape(nk, 1) / omega
+    cr_inc, up_inc, dow_inc = crup_inc(k, u_10, phi)
     B_crw = alpha * (SW / alpha) ** (1 / (n+1)) * np.ones((nk, cr_inc.shape[0]))
     b_v = beta_v(k, u_10, phi)
     # B_upw = -SW / b_v[:, up_inc]
@@ -141,12 +135,10 @@ def B_wdir(k, u_10, phi):
     B_upw = B_upw[:, up_inc]
     return B_crw, B_upw
 
-
 def B_dir(k, u_10, fetch, phi):
-    nk = k.shape[0]
     b_v = beta_v(k, u_10, phi)
     B_ref = B0(k, u_10, phi, fetch)
-    B_crw, B_upw = B_wdir(k, u_10, phi)
+    B_crw, B_upw = B_wdir(k, u_10, phi, fetch)
     Bk_h = b_v
     cr_inc, up_inc, dow_inc = crup_inc(k, u_10, phi)
     Bk_h[:, cr_inc] = B_crw
@@ -155,9 +147,9 @@ def B_dir(k, u_10, fetch, phi):
     return Bk_h
 
 def B_ite(k, u_10, fetch, phi):
-    dd = 1e-2
+    dd = 1e-3
     nk = k.shape[0]
-    BB0 = B_dir(k.reshape(nk, 1), u_10, fetch, phi)
+    BB0 = B_dir(k, u_10, fetch, phi)
     n, alpha = param(k.reshape(nk, 1), u_10, fetch)
     omega = np.sqrt(const.g * k + const.gamma * k ** 3 / const.rho_water)
     b_v = beta_v(k.reshape(nk, 1), u_10, phi)
@@ -165,31 +157,27 @@ def B_ite(k, u_10, fetch, phi):
 
     thres = 10
     while thres > 1e-5:
-        # if np.shape(phi) == ():
-        #     ins = be * BB0 * omega / k
-        #     # ins = ins.reshape(nk, 1)
-        #     dins = be * (BB0 + dd) * omega / k
-        #     # dins = dins.reshape(nk, 1)
-        # else:
         ins = np.trapz(be * BB0 * omega / k, phi, axis=1).reshape(nk, 1)
         dins = np.trapz(be * (BB0 + dd) * omega / k, phi, axis=1).reshape(nk, 1)
         dSW = []
         SW = []
         for kk in k:
             km = min(kk / 10, const.kwb)
-            SW.append(np.trapz(ins[k < km], k[k < km]))
-            dSW.append(np.trapz(dins[k < km], k[k < km]))
+            # SW.append(np.trapz(ins[k < km], k[k < km]))
+            # dSW.append(np.trapz(dins[k < km], k[k < km]))
+            SW.append(np.trapz(np.sort(ins[k < km]), np.sort(k[k < km])))
+            dSW.append(np.trapz(np.sort(dins[k < km]), np.sort(k[k < km])))
         SW = const.cb * np.asarray(SW).reshape(nk, 1) / (2 * const.alphag * omega)
-#         SW = 4.5e-3 * np.asarray(SW).reshape(nk, 1) / omega
+        # SW = 4.5e-3 * np.asarray(SW).reshape(nk, 1) / omega
         dSW = const.cb * np.asarray(dSW).reshape(nk, 1) / (2 * const.alphag * omega)
-#         dSW = 4.5e-3 * np.asarray(dSW).reshape(nk, 1) / omega
+        # dSW = 4.5e-3 * np.asarray(dSW).reshape(nk, 1) / omega
 
         Q = b_v * BB0 - BB0 * (BB0 / alpha) ** n + SW
 
-        dQ = (b_v * (BB0 + dd) - (BB0 + dd) * ((BB0 + dd) / alpha) ** n + dSW) / dd
+        dQ = ((b_v * (BB0 + dd) - (BB0 + dd) * ((BB0 + dd) / alpha) ** n + dSW) - Q) / dd
 
         thres = np.abs(Q / dQ).max()
-        #         print(thres)
+        # print(thres)
 
         BB0 = BB0 - Q / dQ
 
@@ -209,6 +197,7 @@ def Bpc(k, u_10, fetch, phi):
     B0kg = B_ite(kg, u_10, fetch, phi)
     B0kg = np.flipud(B0kg)
     Ipc = bekg * B0kg * func_phi
+          # /func_phi.max()
     n, alpha = param(k.reshape(nk, 1), u_10, fetch)
     omega = np.sqrt(const.g * k + const.gamma * k ** 3/const.rho_water)
     Bpcc = alpha * (-4 * const.v * k ** 2 / omega + np.sqrt((4 * const.v * k ** 2 / omega)**2 + 4 * Ipc / alpha)) / 2
