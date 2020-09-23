@@ -72,18 +72,12 @@ def beta_v(k, u_10, phi):
 
     return b_v
 
-def crup_inc(k, u_10, phi):
-    b_v = beta_v(k, u_10, phi)
-    nphi = phi.shape[0]
-    dow_inc = np.where(b_v[0, :] > 0)[0]
-    if dow_inc.shape[0] == nphi:
-        cr_inc = np.arange(0)
-        up_inc = np.arange(0)
-    else:
-        neg = np.where(b_v[np.where(k == k.min())[0][0], :] < 0)[0]
-        cr_ed = np.cos(phi[neg]).max()
-        cr_inc = np.where(np.logical_and(np.cos(phi)<=cr_ed, np.cos(phi)>=-cr_ed))[0]
-        up_inc = np.where(np.cos(phi)<-cr_ed)[0]
+def crup_inc(phi):
+    # based on experiemts before, assume >83 is downwind, <83 is crosswind
+    cr_ed = np.cos(np.radians(83))
+    dow_inc = np.where(np.cos(phi) > cr_ed)[0]
+    cr_inc = np.where(np.logical_and(np.cos(phi) <= cr_ed, np.cos(phi) >= -cr_ed))[0]
+    up_inc = np.where(np.cos(phi) < -cr_ed)[0]
     return cr_inc, up_inc, dow_inc
 
 def func_f(k, k_num):
@@ -126,7 +120,7 @@ def B_wdir(k, u_10, phi, fetch):
         SW.append(np.trapz(np.sort(ins[k < km]), np.sort(k[k < km])))
     SW = const.cb * np.asarray(SW).reshape(nk, 1) / (2 * const.alphag * omega)
     # SW = 4.5e-3 * np.asarray(SW).reshape(nk, 1) / omega
-    cr_inc, up_inc, dow_inc = crup_inc(k, u_10, phi)
+    cr_inc, up_inc, dow_inc = crup_inc(phi)
     B_crw = alpha * (SW / alpha) ** (1 / (n+1)) * np.ones((nk, cr_inc.shape[0]))
     b_v = beta_v(k, u_10, phi)
     # B_upw = -SW / b_v[:, up_inc]
@@ -140,7 +134,7 @@ def B_dir(k, u_10, fetch, phi):
     B_ref = B0(k, u_10, phi, fetch)
     B_crw, B_upw = B_wdir(k, u_10, phi, fetch)
     Bk_h = b_v
-    cr_inc, up_inc, dow_inc = crup_inc(k, u_10, phi)
+    cr_inc, up_inc, dow_inc = crup_inc(phi)
     Bk_h[:, cr_inc] = B_crw
     Bk_h[:, dow_inc] = B_ref[:, dow_inc]
     Bk_h[:, up_inc] = B_upw
