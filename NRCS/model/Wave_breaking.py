@@ -43,7 +43,7 @@ def Wave_breaking(kr, theta, azimuth, u_10, fetch, spec_name = 'elfouhaily'):
 
     # distribution function
     # in radians azimuth of breaking surface area: -pi/2,pi/2
-    phi1 = np.linspace(-np.pi/2, np.pi/2, nphi)
+    phi1 = np.linspace(-np.pi, np.pi, nphi)
     nk = 1024
     K = np.linspace(10 * spec_peak(u_10, fetch), knb, nk)
     # K = np.linspace(spec_peak(u_10, fetch), knb, nk)
