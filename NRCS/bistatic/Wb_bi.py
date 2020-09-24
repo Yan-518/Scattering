@@ -52,8 +52,7 @@ def eq_wb(kr, theta_eq, eq_azi, u_10, fetch, spec_name):
     q = const.cq * lamda_k
     nazi = eq_azi.shape[0]
     Awb = np.trapz(np.cos(phi1 - eq_azi.reshape(nazi, 1)) * lamda, phi1, axis=1) / lamda_k
-    Awb = Awb.reshape(nazi, 1)
-    WB = wb0.reshape(1, nphi)*(1+Mwb.reshape(1, nphi)*const.theta_wb*Awb)
+    WB = wb0 * (1 + Mwb * const.theta_wb * Awb)
     return WB, q
 
 def Wb_bi(kr, theta_i, theta_s, theta_eq, eq_azi, u_10, fetch, spec_name, polarization):
