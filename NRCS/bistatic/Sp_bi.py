@@ -34,33 +34,30 @@ def eq_sp(kr, theta_eq, eq_azi, u_10, fetch, spec_name):
     RR_vv = ((const.epsilon_sw*cos_theta_ll - sqrt_e_sin)/(const.epsilon_sw*cos_theta_ll + sqrt_e_sin)) # equation [5.54]
     RR = RR_vv
 
-    SSup = np.zeros([nazi])
-    SScr = np.zeros([nazi])
-    for num in np.arange(nazi):
-        kkbr = 2 * kr * np.sin(theta_eq) * np.cos(eq_azi[num])
-        if spec_name == 'elfouhaily':
-            spreadf = spread.models[spec_name]
-            SSkdir = specf(kkbr.reshape((nphi, 1)), u_10, fetch) * spreadf(kkbr.reshape((nphi, 1)), phi, u_10, fetch)/kkbr.reshape(nphi, 1) # equation 45
-        else:
-            SSkdir = specf(kkbr.reshape((nphi, 1)), u_10, fetch, phi) / kkbr.reshape(nphi, 1) ** 4  # equation 45
+    kkbr = 2 * kr * np.sin(theta_eq) * np.cos(eq_azi)
+
+    if spec_name == 'elfouhaily':
+        spreadf = spread.models[spec_name]
+        SSkdir = specf(kkbr.reshape((nphi, 1)), u_10, fetch) * spreadf(kkbr.reshape((nphi, 1)), phi, u_10,
+                                                                       fetch) / kkbr.reshape(nphi, 1)  # equation 45
+    else:
+        SSkdir = specf(kkbr.reshape((nphi, 1)), u_10, fetch, phi) / kkbr.reshape(nphi, 1) ** 4  # equation 45
+
     # # mean square slope in upwind direction
-        Sup = np.trapz(kkbr.reshape(nphi, 1)**3*np.cos(phi)**2*SSkdir, phi, axis=1)
+    Sup = np.trapz(kkbr.reshape(nphi, 1)**3*np.cos(phi)**2*SSkdir, phi, axis=1)
     # integration over k<kd
-        Sup = np.trapz(Sup[kkbr < const.kd], kkbr[kkbr < const.kd])
+    Sup = np.trapz(Sup[kkbr < const.kd], kkbr[kkbr < const.kd])
     # mean square slope in crosswind direction
     # integration over phi
-        Scr = np.trapz(kkbr.reshape(nphi, 1)**3*np.sin(phi)**2*SSkdir, phi, axis=1)
+    Scr = np.trapz(kkbr.reshape(nphi, 1)**3*np.sin(phi)**2*SSkdir, phi, axis=1)
     # integration over k<kd
-        Scr = np.trapz(Scr[kkbr < const.kd], kkbr[kkbr < const.kd])
-    SSup[num] = Sup
-    SScr[num] = Scr
-    SSup = SSup.reshape(nazi, 1)
-    SScr = SScr.reshape(nazi,1)
+    Scr = np.trapz(Scr[kkbr < const.kd], kkbr[kkbr < const.kd])
+
     # Kudryavtsev 2005 equation (10) comment
     # Mean squre slope satisfying conditions of the specular reflections
-    Ssp = SSup * SScr / (SSup * np.sin(eq_azi.reshape(nazi, 1)) ** 2 + SScr * np.cos(eq_azi.reshape(nazi, 1)) ** 2)
+    Ssp = Sup * Scr / (Sup * np.sin(eq_azi) ** 2 + Scr * np.cos(eq_azi) ** 2)
 
-    SP = np.pi*np.abs(RR)**2*np.exp(-np.tan(theta_eq.reshape((1, nphi)))**2/(2*Ssp))/(2*np.pi*np.sqrt(Sup)*np.sqrt(Scr)*np.cos(theta_eq.reshape(1, nphi))**4) # equation [10] in 2005
+    SP = np.pi*np.abs(RR)**2*np.exp(-np.tan(theta_eq)**2/(2*Ssp))/(2*np.pi*np.sqrt(Sup)*np.sqrt(Scr)*np.cos(theta_eq)**4) # equation [10] in 2005
 
     return SP
 
