@@ -66,49 +66,42 @@ def eq_br(k, kr, theta_eq, eq_azi, u_10, fetch, spec_name, polarization):
         G = np.cos(theta_l) ** 2 * (const.epsilon_sw - 1) / (np.cos(theta_l) + eps_sin) ** 2
         G = np.abs(G) ** 2
 
-    Br = np.zeros([nazi, nphi])
-
-    for num in np.arange(nazi):
-
-        kbr = 2*kr*np.sin(theta_l)*np.cos(eq_azi[num])
-
-    # 3-D Sk computed from kudryavtsev05
-        if spec_name == 'kudryavtsev05':
-            Skk = np.zeros([nnk, nphi, nazi])
-        # spec_Skk = specf(np.sort(kbr[0, :]).reshape(nphi, 1), u_10, fetch, azimuth) / np.sort(kbr[0, :]).reshape(nphi, 1) ** 4
-            for nn in np.arange(nnk):
-                spec_Skk = specf(kbr[nn, :].reshape(nphi, 1), u_10, fetch, eq_azi) / kbr[nn, :].reshape(nphi, 1) ** 4
-                Skk[nn, :, :] = spec_Skk
-            inc = np.where(eq_azi >= 0)[0]
-            incc = np.linspace(1, inc[0], inc[0])
-            inc = np.hstack((inc, incc))
-            Skk_pi = Skk[:, :, inc.astype(int)]
-            Skb = Skk[:, :, num]  # equation 45
-            Skb_pi = Skk_pi[:, :, num]
-        else:
-            Sk = specf(kbr, u_10, fetch)
-            spreadf = spread.models[spec_name]
-            Skb = Sk * spreadf(kbr, eq_azi[num], u_10, fetch) / kbr  # equation 45
-            Skb_pi = Sk * spreadf(kbr, eq_azi[num] + np.pi, u_10, fetch) / kbr  # equation 45
-        Skb_r = (Skb+Skb_pi) / 2 # Kudryavtsev 2003a equation 2
+    # compute the wave number for bistatic geometry
+    kbr = 2 * kr * np.sin(theta_l) * np.cos(eq_azi)
+    # sort eq_azi
+    sort_ind = np.argsort(eq_azi)
+    sort_azi = np.sort(eq_azi)
+    if spec_name == 'kudryavtsev05':
+        Skb = np.zeros([nnk, nphi])
+        Skb_pi = np.zeros([nnk, nphi])
+        for nn in np.arange(nazi):
+            spec_Skk1 = specf(kbr[:, nn].reshape(nnk, 1), u_10, fetch, sort_azi) / kbr[:, nn].reshape(nnk, 1) ** 4
+            Skb[:, nn] = spec_Skk1[:, sort_ind[nn]]
+            spec_Skk2 = specf(kbr[:, nn].reshape(nnk, 1), u_10, fetch, np.pi + sort_azi) / kbr[:, nn].reshape(nnk, 1) ** 4
+            Skb_pi[:, nn] = spec_Skk2[:, sort_ind[nn]]
+    else:
+        Sk = specf(kbr, u_10, fetch)
+        spreadf = spread.models[spec_name]
+        Skb = Sk * spreadf(kbr, eq_azi, u_10, fetch) / kbr  # equation 45
+        Skb_pi = Sk * spreadf(kbr, eq_azi + np.pi, u_10, fetch) / kbr  # equation 45
+    Skb_r = (Skb + Skb_pi) / 2  # Kudryavtsev 2003a equation 2
 
     # pure Bragg scattering NRCS
-        br0 = 16 * np.pi * kr ** 4 * G * Skb_r
+    br0 = 16 * np.pi * kr ** 4 * G * Skb_r
 
     # Bragg scattering composite model
-        BR = br0 * P.reshape(nnk, 1)
+    BR = br0 * P.reshape(nnk, 1)
 
     # integral over kbr >= kd
-        intebr = []
+    intebr = []
 
-        for i in np.arange(nphi):
-            a = np.tan(theta_eq[i]-const.d / (2 * np.cos(eq_azi[num])))
-            b = np.tan(theta_eq[i]+const.d / (2 * np.cos(eq_azi[num])))
-            inte = BR[:, i].reshape(nnk, 1)
-            vv = np.trapz(inte[ni <= a], ni[ni <= a]) + np.trapz(inte[ni >= b], ni[ni >= b])
-            intebr.append(vv)
-        intebr = np.asarray(intebr)
-        Br[num, :] = intebr
+    for i in np.arange(nphi):
+        a = np.tan(theta_eq[i] - const.d / (2 * np.cos(eq_azi[i])))
+        b = np.tan(theta_eq[i] + const.d / (2 * np.cos(eq_azi[i])))
+        inte = BR[:, i].reshape(nnk, 1)
+        vv = np.trapz(inte[ni <= a], ni[ni <= a]) + np.trapz(inte[ni >= b], ni[ni >= b])
+        intebr.append(vv)
+    Br = np.asarray(intebr)
     return Br
 
 def Br_bi(k, kr, theta_i, theta_s, theta_eq, eq_azi, u_10, fetch, spec_name, polarization):
