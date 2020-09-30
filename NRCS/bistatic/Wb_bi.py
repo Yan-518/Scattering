@@ -5,6 +5,7 @@ from NRCS import spread
 from NRCS.spec.kudryavtsev05 import param
 from NRCS.spec.kudryavtsev05 import spec_peak
 from stereoid.oceans.bistatic_pol import elfouhaily
+from NRCS.model.Wave_breaking import CP_breaking
 
 def eq_wb(kr, theta_eq, eq_azi, u_10, fetch, spec_name):
     """
@@ -50,9 +51,11 @@ def eq_wb(kr, theta_eq, eq_azi, u_10, fetch, spec_name):
     lamda = np.trapz(lamda, K, axis=0)
     lamda_k = np.trapz(lamda_k, K)
     q = const.cq * lamda_k
-    nazi = eq_azi.shape[0]
-    Awb = np.trapz(np.cos(phi1 - eq_azi.reshape(nazi, 1)) * lamda, phi1, axis=1) / lamda_k
-    WB = wb0 * (1 + Mwb * const.theta_wb * Awb)
+    if polarization == 'VH':
+        WB = CP_breaking(theta_eq)[:, 0]
+    else:
+        Awb = np.trapz(np.cos(phi1 - eq_azi.reshape(nphi, 1)) * lamda, phi1, axis=1) / lamda_k
+        WB = wb0 * (1 + Mwb * const.theta_wb * Awb)
     return WB, q
 
 def Wb_bi(kr, theta_i, theta_s, theta_eq, eq_azi, u_10, fetch, spec_name, polarization):
