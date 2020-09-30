@@ -2,7 +2,30 @@ from NRCS import constants as const
 from NRCS import spec
 from NRCS import spread
 import numpy as np
+from NRCS.model.Bragg_scattering import MSS
 from stereoid.oceans.bistatic_pol import elfouhaily
+
+def eq_CPBr(kr, theta_eq, eq_azi, u_10, fetch, spec_name):
+    # [Kudryavtsev, 2019] equation A1c
+    nphi = theta_eq.shape[0]
+    theta_eq = theta_eq.reshape(nphi, 1)
+    eps_sin = np.sqrt(const.epsilon_sw-np.sin(theta_eq)**2)
+    Gvv = np.cos(theta_eq)**2*(const.epsilon_sw-1)*(const.epsilon_sw*(1+np.sin(theta_eq)**2) - np.sin(theta_eq)**2) / (const.epsilon_sw*np.cos(theta_eq)+eps_sin)**2
+    Ghh = np.cos(theta_eq)**2*(const.epsilon_sw-1)/(np.cos(theta_eq)+eps_sin)**2
+    G = (np.abs(Gvv-Ghh)**2).reshape(nphi, 1)
+    kbr = 2*kr*np.sin(theta_eq) * np.cos(eq_azi.reshape(nphi, 1))
+    sn2 = MSS(kbr, u_10, fetch).reshape(nphi,1)
+    specf = spec.models[spec_name]
+    ind = np.arange(nphi)
+    if spec_name == 'elfouhaily':
+        # Directional spectrum model name
+        spreadf = spread.models[spec_name]
+        Bkdir = specf(kbr.reshape(nphi, 1), u_10, fetch) * spreadf(kbr.reshape(nphi, 1), eq_azi, u_10, fetch) * kbr.reshape(nphi, 1)**3
+    else:
+        BB = specf(kbr.reshape(nphi, 1), u_10, fetch, eq_azi)
+        Bkdir = BB[ind, ind]
+    Brcp = np.pi * G * sn2 * Bkdir.reshape(nphi,1)/(np.tan(theta_eq)**4 * np.sin(theta_eq)**2)
+    return Brcp[:, 0]
 
 def eq_br(k, kr, theta_eq, eq_azi, u_10, fetch, spec_name, polarization):
     """
@@ -17,6 +40,10 @@ def eq_br(k, kr, theta_eq, eq_azi, u_10, fetch, spec_name, polarization):
     :return:
     """
 
+    if polarization == 'VH':
+        Br = eq_CPBr(kr, theta_eq, eq_azi, u_10, fetch, spec_name)
+        return Br
+    
     nphi = theta_eq.shape[0]
     nk = k.shape[0]
     nazi = eq_azi.shape[0]
