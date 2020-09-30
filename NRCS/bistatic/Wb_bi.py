@@ -7,7 +7,7 @@ from NRCS.spec.kudryavtsev05 import spec_peak
 from stereoid.oceans.bistatic_pol import elfouhaily
 from NRCS.model.Wave_breaking import CP_breaking
 
-def eq_wb(kr, theta_eq, eq_azi, u_10, fetch, spec_name):
+def eq_wb(kr, theta_eq, eq_azi, u_10, fetch, spec_name, polarization):
     """
     :param kp:
     :param kr:
