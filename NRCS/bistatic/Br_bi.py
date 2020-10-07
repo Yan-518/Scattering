@@ -142,8 +142,8 @@ def eq_br(k, kr, theta_eq, bist_ang_az, eq_azi, u_10, fetch, spec_name, polariza
     intebr = []
 
     for i in np.arange(nphi):
-        a = np.tan(theta_eq[i] - const.d / (2 * np.cos(eq_azi[i])))
-        b = np.tan(theta_eq[i] + const.d / (2 * np.cos(eq_azi[i])))
+        a = np.tan(theta_eq[i] - const.d / (2 * np.cos(bist_ang_az[i])))
+        b = np.tan(theta_eq[i] + const.d / (2 * np.cos(bist_ang_az[i])))
         inte = BR[:, i].reshape(nnk, 1)
         vv = np.trapz(inte[ni <= a], ni[ni <= a]) + np.trapz(inte[ni >= b], ni[ni >= b])
         intebr.append(vv)
