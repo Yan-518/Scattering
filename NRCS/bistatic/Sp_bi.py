@@ -76,8 +76,8 @@ def pol_vec_sp(theta_i, theta_s, bist_ang_az, eq_azi, inc_polar):
     (rot_ang_1, rot_ang_2, rot_ang_tot, Ps1, Ps2, Ps_tot) = elfouhaily(poli, np.degrees(eq_azi), np.degrees(theta_i),
                                                                        np.degrees(eq_azi), np.degrees(theta_i))
     Ps1_eq_norm = np.linalg.norm(Ps1, axis=-1)
-    (rot_ang_1, rot_ang_2, rot_ang_tot, Ps1, Ps2, Ps_tot) = elfouhaily(poli, np.degrees(eq_azi-bist_ang_az/2), np.degrees(theta_i),
-                                                                       np.degrees(eq_azi+bist_ang_az/2), np.degrees(theta_s))
+    (rot_ang_1, rot_ang_2, rot_ang_tot, Ps1, Ps2, Ps_tot) = elfouhaily(poli, np.degrees(eq_azi+bist_ang_az/2), np.degrees(theta_i),
+                                                                       np.degrees(eq_azi-bist_ang_az/2), np.degrees(theta_s))
     Ps1_bi_norm = np.linalg.norm(Ps1, axis=-1)
     # transfer function
     M = Ps1_bi_norm ** 2 / Ps1_eq_norm ** 2
