@@ -17,7 +17,7 @@ def bi(kr, theta_i, theta_s, theta_eq, bist_ang_az, fetch, spec_name, u_10, azi,
     k = np.linspace(10 * k_min, const.ky, nk)
 
     # azimuth angle with respect to the wind direction
-    azimuth = azi+bist_ang_az/2
+    azimuth = azi-bist_ang_az/2
 
     pol = 'VV'
     if inc_polar == 'V':
