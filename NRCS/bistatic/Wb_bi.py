@@ -59,7 +59,7 @@ def eq_wb(kr, theta_eq, eq_azi, u_10, fetch, spec_name, polarization):
         WB = wb0 * (1 + Mwb * const.theta_wb * Awb)
     return WB, q
 
-def Wb_bi(kr, theta_i, theta_s, theta_eq, bist_ang_az, eq_azi, u_10, fetch, spec_name, polarization, inc_polar, re_polar):
+def Wb_bi(kr, theta_i, theta_s, theta_eq, bist_ang_az, eq_azi, u_10, fetch, spec_name, polarization, inc_polar, re_polar, sat):
     """
     :param k:
     :param kr:
@@ -72,7 +72,7 @@ def Wb_bi(kr, theta_i, theta_s, theta_eq, bist_ang_az, eq_azi, u_10, fetch, spec
     :return:
     """
     # polarization of incident plane
-    M, rot = pol_vec_sp(theta_i, theta_s, bist_ang_az, eq_azi, inc_polar)
+    M, rot = pol_vec_sp(theta_i, theta_s, bist_ang_az, eq_azi, inc_polar, sat)
     WB, q = eq_wb(kr, theta_eq, eq_azi, u_10, fetch, spec_name, polarization)
     if polarization =='VH':
         if re_polar == 'Bragg':
