@@ -150,7 +150,7 @@ def eq_br(k, kr, theta_eq, bist_ang_az, eq_azi, u_10, fetch, spec_name, polariza
     Br = np.asarray(intebr)
     return Br
 
-def pol_vec_br(theta_i, theta_s, bist_ang_az, eq_azi, inc_polar):
+def pol_vec_br(theta_i, theta_s, bist_ang_az, eq_azi, inc_polar, sat):
     """
     :param theta_i:
     :param eq_azi:
@@ -158,6 +158,7 @@ def pol_vec_br(theta_i, theta_s, bist_ang_az, eq_azi, inc_polar):
     :return:
     """
     # polarization of incident plane
+    poli = 90
     if inc_polar == 'V':
         poli = 90
     elif inc_polar == 'H':
@@ -165,13 +166,20 @@ def pol_vec_br(theta_i, theta_s, bist_ang_az, eq_azi, inc_polar):
     # polarization for the mono-static equivalent
     (rot_ang_1, rot_ang_2, rot_ang_tot, Ps1, Ps2, Ps_tot) = elfouhaily(poli, np.degrees(eq_azi), np.degrees(theta_i), np.degrees(eq_azi), np.degrees(theta_i))
     Ps_eq_norm = np.linalg.norm(Ps_tot, axis=-1)
-    (rot_ang_1, rot_ang_2, rot_ang_tot, Ps1, Ps2, Ps_tot) = elfouhaily(poli, np.degrees(eq_azi+bist_ang_az/2), np.degrees(theta_i), np.degrees(eq_azi-bist_ang_az/2), np.degrees(theta_s))
+    if sat == 'A':
+        (rot_ang_1, rot_ang_2, rot_ang_tot, Ps1, Ps2, Ps_tot) = elfouhaily(poli, np.degrees(eq_azi + bist_ang_az / 2),
+                                                                           np.degrees(theta_i),
+                                                                           np.degrees(eq_azi - bist_ang_az / 2),
+                                                                           np.degrees(theta_s))
+    else:
+        (rot_ang_1, rot_ang_2, rot_ang_tot, Ps1, Ps2, Ps_tot) = elfouhaily(poli, np.degrees(eq_azi-bist_ang_az/2), np.degrees(theta_i), np.degrees(eq_azi+bist_ang_az/2), np.degrees(theta_s))
+   
     Ps_bi_norm = np.linalg.norm(Ps_tot, axis=-1)
     #  transfer function
     M = Ps_bi_norm ** 2 / Ps_eq_norm ** 2
     return M
 
-def Br_bi(k, kr, theta_i, theta_s, theta_eq, bist_ang_az, eq_azi, u_10, fetch, spec_name, polarization, inc_polar):
-    M = pol_vec_br(theta_i, theta_s, bist_ang_az, eq_azi, inc_polar)
+def Br_bi(k, kr, theta_i, theta_s, theta_eq, bist_ang_az, eq_azi, u_10, fetch, spec_name, polarization, inc_polar, sat):
+    M = pol_vec_br(theta_i, theta_s, bist_ang_az, eq_azi, inc_polar, sat)
     Br = eq_br(k, kr, theta_eq, bist_ang_az, eq_azi, u_10, fetch, spec_name, polarization)
     return M * Br
