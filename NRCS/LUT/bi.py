@@ -6,7 +6,7 @@ from NRCS.bistatic import Wb_bi
 import drama.geo as sargeo
 import xarray as xr
 
-def bi(kr, theta_i, theta_s, theta_eq, bist_ang_az, fetch, spec_name, u_10, azi, inc_polar, re_polar):
+def bi(kr, theta_i, theta_s, theta_eq, bist_ang_az, fetch, spec_name, u_10, azi, inc_polar, re_polar, sat):
     """ :param kr: Radar wave number
         :param theta: Normal incidence angle vector
         :param azimuth: radar look angle relative to wind direction vector
@@ -17,22 +17,25 @@ def bi(kr, theta_i, theta_s, theta_eq, bist_ang_az, fetch, spec_name, u_10, azi,
     k = np.linspace(10 * k_min, const.ky, nk)
 
     # azimuth angle with respect to the wind direction
-    azimuth = azi-bist_ang_az/2
+    if sat == 'A':
+        azimuth = azi - bist_ang_az/2
+    else:
+        azimuth = azi + bist_ang_az/2
 
     pol = 'VV'
     if inc_polar == 'V':
-        pol == 'VV'
+        pol = 'VV'
     else:
         pol = 'HH'
 
     if re_polar == 'Bragg':
-        wb, q = Wb_bi(kr, theta_i, theta_s, theta_eq, bist_ang_az, azimuth, u_10, fetch, spec_name, pol, inc_polar, re_polar)
-        br = Br_bi(k, kr, theta_i, theta_s, theta_eq, bist_ang_az, azimuth, u_10, fetch, spec_name, pol, inc_polar)
+        wb, q = Wb_bi(kr, theta_i, theta_s, theta_eq, bist_ang_az, azimuth, u_10, fetch, spec_name, pol, inc_polar, re_polar, sat)
+        br = Br_bi(k, kr, theta_i, theta_s, theta_eq, bist_ang_az, azimuth, u_10, fetch, spec_name, pol, inc_polar, sat)
         return br * (1 - q) + wb * q
     else:
-        wb, q = Wb_bi(kr, theta_i, theta_s, theta_eq, bist_ang_az, azimuth, u_10, fetch, spec_name, pol, inc_polar, re_polar)
-        wb_vh, q_vh = Wb_bi(kr, theta_i, theta_s, theta_eq, bist_ang_az, azimuth, u_10, fetch, spec_name, 'VH', inc_polar, re_polar)
-        br = Br_bi(k, kr, theta_i, theta_s, theta_eq, bist_ang_az, azimuth, u_10, fetch, spec_name, 'VH', inc_polar)
+        wb, q = Wb_bi(kr, theta_i, theta_s, theta_eq, bist_ang_az, azimuth, u_10, fetch, spec_name, pol, inc_polar, re_polar, sat)
+        wb_vh, q_vh = Wb_bi(kr, theta_i, theta_s, theta_eq, bist_ang_az, azimuth, u_10, fetch, spec_name, 'VH', inc_polar, re_polar, sat)
+        br = Br_bi(k, kr, theta_i, theta_s, theta_eq, bist_ang_az, azimuth, u_10, fetch, spec_name, 'VH', inc_polar, sat)
         return br * (1 - q_vh) + wb * q +wb_vh * q_vh
 
 # # input parameters
