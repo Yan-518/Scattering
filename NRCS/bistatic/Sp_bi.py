@@ -60,7 +60,7 @@ def eq_sp(kr, theta_eq, bist_ang_az, eq_azi, u_10, fetch, spec_name):
 
     return SP
 
-def pol_vec_sp(theta_i, theta_s, bist_ang_az, eq_azi, inc_polar):
+def pol_vec_sp(theta_i, theta_s, bist_ang_az, eq_azi, inc_polar, sat):
     """
     :param theta_i:
     :param eq_azi:
@@ -68,6 +68,7 @@ def pol_vec_sp(theta_i, theta_s, bist_ang_az, eq_azi, inc_polar):
     :return:
     """
     # polarization of incident plane
+    poli = 90
     if inc_polar == 'V':
         poli = 90
     elif inc_polar == 'H':
@@ -76,8 +77,17 @@ def pol_vec_sp(theta_i, theta_s, bist_ang_az, eq_azi, inc_polar):
     (rot_ang_1, rot_ang_2, rot_ang_tot, Ps1, Ps2, Ps_tot) = elfouhaily(poli, np.degrees(eq_azi), np.degrees(theta_i),
                                                                        np.degrees(eq_azi), np.degrees(theta_i))
     Ps1_eq_norm = np.linalg.norm(Ps1, axis=-1)
-    (rot_ang_1, rot_ang_2, rot_ang_tot, Ps1, Ps2, Ps_tot) = elfouhaily(poli, np.degrees(eq_azi+bist_ang_az/2), np.degrees(theta_i),
-                                                                       np.degrees(eq_azi-bist_ang_az/2), np.degrees(theta_s))
+    
+    if sat == 'A':
+        (rot_ang_1, rot_ang_2, rot_ang_tot, Ps1, Ps2, Ps_tot) = elfouhaily(poli, np.degrees(eq_azi + bist_ang_az / 2),
+                                                                           np.degrees(theta_i),
+                                                                           np.degrees(eq_azi - bist_ang_az / 2),
+                                                                           np.degrees(theta_s))
+    else:
+        (rot_ang_1, rot_ang_2, rot_ang_tot, Ps1, Ps2, Ps_tot) = elfouhaily(poli, np.degrees(eq_azi - bist_ang_az / 2),
+                                                                           np.degrees(theta_i),
+                                                                           np.degrees(eq_azi + bist_ang_az / 2),
+                                                                           np.degrees(theta_s))
     Ps1_bi_norm = np.linalg.norm(Ps1, axis=-1)
     # transfer function
     M = Ps1_bi_norm ** 2 / Ps1_eq_norm ** 2
@@ -87,7 +97,7 @@ def pol_vec_sp(theta_i, theta_s, bist_ang_az, eq_azi, inc_polar):
     rot = np.radians(rot)
     return M, rot
 
-def Sp_bi(kr, theta_i, theta_s, theta_eq, bist_ang_az, eq_azi, u_10, fetch, spec_name, inc_polar):
+def Sp_bi(kr, theta_i, theta_s, theta_eq, bist_ang_az, eq_azi, u_10, fetch, spec_name, inc_polar, sat):
     """
     :param k:
     :param kr:
@@ -99,6 +109,6 @@ def Sp_bi(kr, theta_i, theta_s, theta_eq, bist_ang_az, eq_azi, u_10, fetch, spec
     :return:
     """
     # polarization of incident plane
-    M, rot = pol_vec_sp(theta_i, theta_s, bist_ang_az, eq_azi, inc_polar)
+    M, rot = pol_vec_sp(theta_i, theta_s, bist_ang_az, eq_azi, inc_polar, sat)
     SP = eq_sp(kr, theta_eq, bist_ang_az, eq_azi, u_10, fetch, spec_name)
     return M * SP * np.cos(rot) ** 2
