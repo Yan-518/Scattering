@@ -119,12 +119,17 @@ def eq_br(k, kr, theta_eq, bist_ang_az, eq_azi, u_10, fetch, spec_name, polariza
         Skb = np.zeros([nnk, nphi])
         Skb_pi = np.zeros([nnk, nphi])
         for nn in np.arange(nazi):
-            # spec_Skk1 = specf(kbr[:, nn].reshape(nnk, 1), u_10, fetch, sort_azi) / kbr[:, nn].reshape(nnk, 1) ** 4
-            spec_Skk1 = B_int(kbr[:, nn].reshape(nnk, 1), u_10, fetch, sort_azi)[:, sort_ind] / kbr[:, nn].reshape(nnk, 1) ** 4
+            kkbr = np.sort(kbr[:, nn]).reshape(nnk, 1)
+            spec_Skk1 = B_int(kkbr, u_10, fetch, sort_azi)[:, sort_ind][np.argsort(kbr[:, nn]), :] / kbr[:, nn].reshape(nnk,1) ** 4
             Skb[:, nn] = spec_Skk1[:, nn]
-            # spec_Skk2 = specf(kbr[:, nn].reshape(nnk, 1), u_10, fetch, np.pi + sort_azi) / kbr[:, nn].reshape(nnk, 1) ** 4
-            spec_Skk2 = B_int(kbr[:, nn].reshape(nnk, 1), u_10, fetch, np.pi + sort_azi)[:, sort_ind] / kbr[:, nn].reshape(nnk, 1) ** 4
+            spec_Skk2 = B_int(kkbr, u_10, fetch, np.pi + sort_azi)[:, sort_ind][np.argsort(kbr[:, nn]), :] / kbr[:, nn].reshape(nnk, 1) ** 4
             Skb_pi[:, nn] = spec_Skk2[:, nn]
+            # spec_Skk1 = specf(kbr[:, nn].reshape(nnk, 1), u_10, fetch, sort_azi) / kbr[:, nn].reshape(nnk, 1) ** 4
+#             spec_Skk1 = B_int(kbr[:, nn].reshape(nnk, 1), u_10, fetch, sort_azi)[:, sort_ind] / kbr[:, nn].reshape(nnk, 1) ** 4
+#             Skb[:, nn] = spec_Skk1[:, nn]
+            # spec_Skk2 = specf(kbr[:, nn].reshape(nnk, 1), u_10, fetch, np.pi + sort_azi) / kbr[:, nn].reshape(nnk, 1) ** 4
+#             spec_Skk2 = B_int(kbr[:, nn].reshape(nnk, 1), u_10, fetch, np.pi + sort_azi)[:, sort_ind] / kbr[:, nn].reshape(nnk, 1) ** 4
+#             Skb_pi[:, nn] = spec_Skk2[:, nn]
     else:
         Sk = specf(kbr, u_10, fetch)
         spreadf = spread.models[spec_name]
