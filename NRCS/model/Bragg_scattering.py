@@ -91,8 +91,11 @@ def Bragg_scattering(k, kr, theta, azimuth, u_10, fetch, spec_name, polarization
         Skk = np.zeros([nnk, nphi, nazi])
         # spec_Skk = specf(np.sort(kbr[0, :]).reshape(nphi, 1), u_10, fetch, azimuth) / np.sort(kbr[0, :]).reshape(nphi, 1) ** 4
         for nn in np.arange(nnk):
-            spec_Skk = specf(kbr[nn, :].reshape(nphi, 1), u_10, fetch, azimuth) / kbr[nn, :].reshape(nphi, 1) ** 4
+            kkbr = np.sort(kbr[nn, :]).reshape(nphi, 1)
+            spec_Skk = specf(kkbr, u_10, fetch, azimuth)[np.argsort(kbr[nn, :]), :] / kbr[nn, :].reshape(nphi, 1) ** 4
             Skk[nn, :, :] = spec_Skk
+#             spec_Skk = specf(kbr[nn, :].reshape(nphi, 1), u_10, fetch, azimuth) / kbr[nn, :].reshape(nphi, 1) ** 4
+#             Skk[nn, :, :] = spec_Skk
             # spec_Skk = specf(kbr[nn, :].reshape(nphi, 1), u_10, fetch, azimuth+np.pi) / kbr[nn, :].reshape(nphi, 1) ** 4
             # Skk_pi[nn, :, :] = spec_Skk
         inc = np.where(azimuth >= 0)[0]
