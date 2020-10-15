@@ -8,13 +8,10 @@ def wind_exp(k):
     # m*
     # the wind exponent of the spectrum form Trokhimovski, 2000
     kmin = 3.62e+2  # rad/m
-    m_sta = []
-    for kk in k:
-        if kk <= kmin:
-            m_sta.append(1.1 * kk ** 0.742)
-        else:
-            m_sta.append(5.61 - 1.19 * kk + 0.118 * kk ** 2)
-    return np.asarray(m_sta)
+    m_sta = k
+    m_sta[k <= kmin] = 1.1 * k[k <= kmin] ** 0.742
+    m_sta[k > kmin] = 5.61 - 1.19 * k[k > kmin] + 0.118 * k[k > kmin] ** 2
+    return m_sta
 
 def wn_dless(k, u_10):
     #     dimensionless wave number of wind waves
