@@ -1,6 +1,8 @@
 import numpy as np
 import NRCS.constants as const
-from NRCS.modulation import Spectrum
+from NRCS import spec
+from NRCS import spread
+from NRCS.modulation.Spectrum import Trans
 from NRCS.spec.kudryavtsev05 import fv
 
 def MSS_em(K, u_10, tsc):
@@ -11,7 +13,26 @@ def MSS_em(K, u_10, tsc):
     return -cs * divergence / (U * np.sqrt(const.ky * K))
 
 def MSS_contrasts(k, K, u_10, fetch, azimuth, spec_name, tsc):
-    B_old, B_new = Spectrum(k, K, u_10, fetch, azimuth, spec_name, tsc)
-    s2_new = np.trapz(B_new / k, k, axis=2)
-    s2_old = np.trapz(B_old / k, k, axis=2)
-    return (s2_new - s2_old) / s2_old
+    nk = k.shape[2]
+    nazi = azimuth.shape[0]
+    T = Trans(k, K, u_10, fetch, azimuth, tsc)
+    mss = np.zeros([k.shape[0], k.shape[1], nazi])
+    specf = spec.models[spec_name]
+    if spec_name == 'elfouhaily':
+        spreadf = spread.models[spec_name]
+        for ii in np.arange(k.shape[0]):
+            for jj in np.arange(k.shape[1]):
+                B_old = specf(k[ii, jj, :].reshape(nk, 1), u_10[ii, jj], fetch) * spreadf(k[ii, jj, :].reshape(nk, 1), azimuth, u_10[ii, jj], fetch) * k[ii, jj, :].reshape(nk,1) ** 3
+                s2_old = np.trapz(B_old/k[ii, jj, :].reshape(nk,1), k[ii, jj, :], axis =0)
+                s2_new = np.trapz(B_old*(1+np.abs(T[ii, jj, :]))/k[ii, jj, :].reshape(nk,1), k[ii, jj, :], axis =0)
+                mss[ii, jj, :] = (s2_new - s2_old) / s2_old
+    else:
+        for ii in np.arange(k.shape[0]):
+            for jj in np.arange(k.shape[1]):
+                B_old = specf(k[ii, jj, :].reshape(nk, 1), u_10[ii, jj], fetch, azimuth)
+                s2_old = np.trapz(specf(k[ii, jj, :].reshape(nk, 1), u_10[ii, jj], fetch, azimuth)/k[ii, jj, :].reshape(nk,1), k[ii, jj, :], axis =0)
+                s2_new = np.trapz(B_old * (1 + np.abs(T[ii, jj, :]).reshape(nk,1)) / k[ii, jj, :].reshape(nk, 1),
+                                             k[ii, jj, :], axis=0)
+                mss[ii, jj, :] = (s2_new - s2_old) / s2_old
+    return mss
+
