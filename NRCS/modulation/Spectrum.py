@@ -40,12 +40,12 @@ def wn_exp(k, u_10, fetch, azimuth, spec_name):
 def Trans(k, K, u_10, fetch, azimuth, tsc):
     nk = k.shape[2]
     c_beta = 0.04  # wind wave growth parameter
-    k_hat = wn_dless(k, u_10)
     K_hat = K*fv(u_10)**2/const.g
     ax0 = np.linspace(0, tsc.shape[0], k.shape[0] + 1)
     ax1 = np.linspace(0, tsc.shape[1], k.shape[1] + 1)
     wind_exponent = np.zeros([tsc.shape[0], tsc.shape[1], nk])
     mk = np.zeros([tsc.shape[0], tsc.shape[1], nk])
+    k_hat = np.zeros([tsc.shape[0], tsc.shape[1], nk])
     for ii in np.arange(k.shape[0]):
         for jj in np.arange(k.shape[1]):
             wind_expo = wind_exp(k[ii, jj, :])
@@ -54,7 +54,10 @@ def Trans(k, K, u_10, fetch, azimuth, tsc):
             mm = wn_exp(k[ii, jj, :].reshape(nk, 1), u_10[ii, jj], fetch, azimuth, 'kudryavtsev05')[:, 0]
             mk[int(ax0[ii]):int(ax0[ii + 1]), int(ax1[jj]):int(ax1[jj + 1]), :] = mm * np.ones(
                 [int(tsc.shape[0] / k.shape[0]), int(tsc.shape[1] / k.shape[1]), nk])
+            k_min = spec_peak(u_10[ii, jj], fetch)
+            k_hat[ii, jj, :] = np.linspace(k_min, const.ky, nk)
     c_tau = wind_exponent / (2 * c_beta)  # constant
+    k_hat = wn_dless(k_hat, u_10)
     # divergence of the sea surface current
     divergence = np.gradient(tsc[:, :, 0], 1e3, axis=1) + np.gradient(tsc[:, :, 1], 1e3, axis=0)
     # transfer function
