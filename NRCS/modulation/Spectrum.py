@@ -30,6 +30,10 @@ def wn_dless(k, u_10):
     #     dimensionless wave number of wind waves
     return k*fv(u_10)[:, :, None]**2/const.g
 
+def wn_dless_single(k, u_10):
+    #     dimensionless wave number of wind waves
+    return k*fv(u_10)**2/const.g
+
 def wn_exp(k, u_10, fetch, azimuth):
     # mk
     # wave number exponent of the omnidirirectional spectrum of the wave action
@@ -69,17 +73,17 @@ def Trans(k, K, u_10, fetch, azimuth, tsc):
                 1 + 1j * c_tau * k_hat ** (-2) * K_hat[:, :, None]))
     return T
 
-# def Trans_single(k, K, u_10, fetch, azimuth, spec_name, divergence):
-#     nk = k.shape[0]
-#     c_beta = 0.04  # wind wave growth parameter
-#     k_hat = wn_dless_single(k, u_10)
-#     K_hat = K*fv(u_10)**2/const.g
-#     wind_exponent = wind_exp(k)
-#     mk = wn_exp(k.reshape(nk, 1), u_10, fetch, azimuth, spec_name)
-#     c_tau = wind_exponent / (2 * c_beta)  # constant
-#     # transfer function
-#     T = c_tau * k_hat ** (-3 / 2) * mk * fv(u_10) * divergence / (const.g*(1 + 1j * c_tau * k_hat ** (-2) * K_hat))
-#     return T
+def Trans_single(k, K, u_10, fetch, azimuth, divergence):
+    nk = k.shape[0]
+    c_beta = 0.04  # wind wave growth parameter
+    k_hat = wn_dless_single(k, u_10)
+    K_hat = K*fv(u_10)**2/const.g
+    wind_exponent = wind_exp(k)
+    mk = wn_exp(k.reshape(nk, 1), u_10, fetch, azimuth)
+    c_tau = wind_exponent / (2 * c_beta)  # constant
+    # transfer function
+    T = c_tau * k_hat ** (-3 / 2) * mk * fv(u_10) * divergence / (const.g*(1 + 1j * c_tau * k_hat ** (-2) * K_hat))
+    return T
 
 def Spectrum(k, K, u_10, fetch, azimuth, tsc, wind_dir):
     nk = k.shape[2]
