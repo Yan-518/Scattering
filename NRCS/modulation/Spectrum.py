@@ -50,7 +50,7 @@ def Trans(k, K, u_10, fetch, azimuth, tsc):
     nk = k.shape[2]
     c_beta = 0.04  # wind wave growth parameter
     k_hat = wn_dless(k, u_10)
-    K_hat = K * fv(wind) ** 2 / const.g
+    K_hat = K * fv(u_10) ** 2 / const.g
     wind_exponent = np.zeros([tsc.shape[0], tsc.shape[1], nk])
     mk = np.zeros([tsc.shape[0], tsc.shape[1], nk])
     for ii in np.arange(k.shape[0]):
