@@ -4,16 +4,15 @@ from NRCS.spec import kudryavtsev05
 from NRCS.spec.kudryavtsev05 import fv
 from NRCS.model.Bragg_scattering import MSS
 from NRCS.modulation import Spectrum
-from NRCS.modulation.Spectrum import wn_exp, wind_exp, sample_back
+from NRCS.modulation.Spectrum import wn_exp, wind_exp
 
 def ni2_func(kr, k, K, u_10, fetch, azimuth, tsc, wind_dir):
     B_old, B_new = Spectrum(k, K, u_10, fetch, azimuth, tsc, wind_dir)
-    k_re, wind = sample_back(k, u_10, tsc)
     kd = const.d*kr
-    ni2 = np.zeros([k_re.shape[0],k_re.shape[1]])
-    for ii in np.arange(k_re.shape[0]):
-        for jj in np.arange(k_re.shape[1]):
-            kk = k_re[ii, jj,:]
+    ni2 = np.zeros([u_10.shape[0],u_10.shape[1]])
+    for ii in np.arange(u_10.shape[0]):
+        for jj in np.arange(u_10.shape[1]):
+            kk = u_10[ii, jj,:]
             ni2[ii, jj] = np.trapz(B_new[ii,jj,:][kk >= kd] / kk[kk >= kd], kk[kk >= kd])
     return ni2
 
@@ -30,7 +29,7 @@ def Trans_func(k, K, u_10, fetch, azimuth, divergence):
                 1 + 1j * c_tau * k_hat ** (-2) * K_hat))
     return T
 
-def CPBr_new(kr, K, theta, azimuth, wind, ind, fetch, divergence):
+def CPBr_new(kr, K, theta, azimuth, u_10, ind, fetch, divergence):
     # [Kudryavtsev, 2019] equation A1c
     nphi = theta.shape[0]
     eps_sin = np.sqrt(const.epsilon_sw-np.sin(theta)**2)
@@ -38,12 +37,12 @@ def CPBr_new(kr, K, theta, azimuth, wind, ind, fetch, divergence):
     Ghh = np.cos(theta)**2*(const.epsilon_sw-1)/(np.cos(theta)+eps_sin)**2
     G = np.abs(Gvv-Ghh)**2
     kbr = 2*kr*np.sin(theta)
-    sn2 = MSS(kbr, wind, fetch)
-    Bkdir = np.zeros([wind.shape[0], wind.shape[1]])
-    for ii in np.arange(wind.shape[0]):
-        for jj in np.arange(wind.shape[1]):
-            T = Trans_func(kbr, K[ii, jj], wind[ii, jj], fetch, azimuth, divergence[ii, jj]).reshape(nphi,1)
-            Bkdir[ii, jj] = (kudryavtsev05(kbr.reshape(nphi, 1), wind[ii, jj], fetch, azimuth)*(1+abs(T)))[jj, ind]
+    sn2 = MSS(kbr, u_10, fetch)
+    Bkdir = np.zeros([u_10.shape[0], u_10.shape[1]])
+    for ii in np.arange(u_10.shape[0]):
+        for jj in np.arange(u_10.shape[1]):
+            T = Trans_func(kbr, K[ii, jj], u_10[ii, jj], fetch, azimuth, divergence[ii, jj]).reshape(nphi,1)
+            Bkdir[ii, jj] = (kudryavtsev05(kbr.reshape(nphi, 1), u_10[ii, jj], fetch, azimuth)*(1+abs(T)))[jj, ind]
     Brcp = np.pi * G * sn2 * Bkdir/(np.tan(theta)**4 * np.sin(theta)**2)
     return Brcp
 
@@ -62,13 +61,11 @@ def Br_new(k, K, kr, theta, azimuth, u_10, fetch, wind_dir, ind_pi, tsc, polariz
     # divergence of the sea surface current
     divergence = np.gradient(tsc[:, :, 0], 1e3, axis=1) + np.gradient(tsc[:, :, 1], 1e3, axis=0)
 
-    k_re, wind = sample_back(k, u_10, tsc)
-
     # wind direction index
     ind = np.where(np.degrees(azimuth) == wind_dir)[0]
 
     if polarization == 'VH':
-        Br = CPBr_new(kr, K, theta, azimuth, wind, ind, fetch, divergence)
+        Br = CPBr_new(kr, K, theta, azimuth, u_10, ind, fetch, divergence)
         return Br
 
     # # Sea surface slope in the direction of incidence angle
@@ -96,8 +93,8 @@ def Br_new(k, K, kr, theta, azimuth, u_10, fetch, wind_dir, ind_pi, tsc, polariz
             # geometric scattering coefficients [Plant 1997] equation 5,6
             eps_sin = np.sqrt(const.epsilon_sw-np.sin(theta_l)**2)
             kkbr = np.sort(kbr)
-            T = Trans_func(kkbr[:,0], K[ii, jj], wind[ii, jj], fetch, azimuth, divergence[ii, jj])[np.argsort(kbr)]
-            spec_Skk = kudryavtsev05(kkbr.reshape(nnk, 1), wind[ii,jj], fetch, azimuth)[np.argsort(kbr)[:,0], :] * (1+abs(T)) / kbr.reshape(nnk, 1) ** 4
+            T = Trans_func(kkbr[:, 0], K[ii, jj], u_10[ii, jj], fetch, azimuth, divergence[ii, jj])[np.argsort(kbr)]
+            spec_Skk = kudryavtsev05(kkbr.reshape(nnk, 1), u_10[ii,jj], fetch, azimuth)[np.argsort(kbr)[:,0], :] * (1+abs(T)) / kbr.reshape(nnk, 1) ** 4
             Skb_r = (spec_Skk[:, ind] + spec_Skk[:, ind_pi]) / 2
             if polarization == 'VV':
                 G = np.cos(theta_l)**2*(const.epsilon_sw-1)*(const.epsilon_sw*(1+np.sin(theta_l)**2) - np.sin(theta_l)**2) / (const.epsilon_sw*np.cos(theta_l)+eps_sin)**2
