@@ -42,7 +42,7 @@ def CPBr_new(kr, K, theta, azimuth, wind, ind, fetch, divergence):
     Bkdir = np.zeros([wind.shape[0], wind.shape[1]])
     for ii in np.arange(wind.shape[0]):
         for jj in np.arange(wind.shape[1]):
-            T = Trans_func(kbr[:, 0], K[ii, jj], wind[ii, jj], fetch, azimuth, divergence[ii, jj]).reshape(nphi,1)
+            T = Trans_func(kbr, K[ii, jj], wind[ii, jj], fetch, azimuth, divergence[ii, jj]).reshape(nphi,1)
             Bkdir[ii, jj] = (kudryavtsev05(kbr.reshape(nphi, 1), wind[ii, jj], fetch, azimuth)*(1+abs(T)))[jj, ind]
     Brcp = np.pi * G * sn2 * Bkdir/(np.tan(theta)**4 * np.sin(theta)**2)
     return Brcp
@@ -72,7 +72,7 @@ def Br_new(k, K, kr, theta, azimuth, u_10, fetch, wind_dir, ind_pi, tsc, polariz
         return Br
 
     # # Sea surface slope in the direction of incidence angle
-    ni2 = ni2_func(k, K, u_10, fetch, azimuth, tsc, wind_dir)
+    ni2 = ni2_func(kr, k, K, u_10, fetch, azimuth, tsc, wind_dir)
 
     nn = 89 * 2 * np.pi / 180
     ni = (np.arange(nk) * nn / nk).reshape(1, nk) - nn / 2
