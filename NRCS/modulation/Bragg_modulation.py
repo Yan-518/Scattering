@@ -14,7 +14,7 @@ def ni2_func(kr, k, K, u_10, fetch, azimuth, tsc, wind_dir):
     for ii in np.arange(k_re.shape[0]):
         for jj in np.arange(k_re.shape[1]):
             kk = k_re[ii, jj,:]
-            ni2[ii, jj] = np.trapz(B_new[ii,jj ,:][kk >= kd] / kk[kk >= kd], kk[kk >= kd])
+            ni2[ii, jj] = np.trapz(B_new[ii,jj,:][kk >= kd] / kk[kk >= kd], kk[kk >= kd])
     return ni2
 
 def Trans_func(k, K, u_10, fetch, azimuth, divergence):
