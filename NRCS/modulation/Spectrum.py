@@ -49,22 +49,14 @@ def wn_exp(k, u_10, fetch, azimuth):
 def Trans(k, K, u_10, fetch, azimuth, tsc):
     nk = k.shape[2]
     c_beta = 0.04  # wind wave growth parameter
-    k_re, wind = sample_back(k, u_10, tsc)
-    k_hat = wn_dless(k_re, wind)
+    k_hat = wn_dless(k, u_10)
     K_hat = K * fv(wind) ** 2 / const.g
-    ax0 = np.linspace(0, tsc.shape[0], k.shape[0] + 1)
-    ax1 = np.linspace(0, tsc.shape[1], k.shape[1] + 1)
     wind_exponent = np.zeros([tsc.shape[0], tsc.shape[1], nk])
     mk = np.zeros([tsc.shape[0], tsc.shape[1], nk])
     for ii in np.arange(k.shape[0]):
         for jj in np.arange(k.shape[1]):
-            wind_expo = wind_exp(k[ii, jj, :])
-            wind_exponent[int(ax0[ii]):int(ax0[ii + 1]), int(ax1[jj]):int(ax1[jj + 1]), :] = wind_expo * np.ones(
-            [int(tsc.shape[0] / k.shape[0]), int(tsc.shape[1] / k.shape[1]), nk])
-            mm = wn_exp(k[ii, jj, :].reshape(nk, 1), u_10[ii, jj], fetch, azimuth)[:, 0]
-            mk[int(ax0[ii]):int(ax0[ii + 1]), int(ax1[jj]):int(ax1[jj + 1]), :] = mm * np.ones(
-                [int(tsc.shape[0] / k.shape[0]), int(tsc.shape[1] / k.shape[1]), nk])
-
+            wind_exponent[ii ,jj, :] = wind_exp(k[ii, jj, :])
+            mk[ii, jj, :] = wn_exp(k[ii, jj, :].reshape(nk, 1), u_10[ii, jj], fetch, azimuth)[:, 0]
     c_tau = wind_exponent / (2 * c_beta)  # constant
     # divergence of the sea surface current
     divergence = np.gradient(tsc[:, :, 0], 1e3, axis=1) + np.gradient(tsc[:, :, 1], 1e3, axis=0)
@@ -89,14 +81,9 @@ def Spectrum(k, K, u_10, fetch, azimuth, tsc, wind_dir):
     nk = k.shape[2]
     T = Trans(k, K, u_10, fetch, azimuth, tsc)
     ind = np.where(np.degrees(azimuth) == wind_dir)[0]
-    ax0 = np.linspace(0, tsc.shape[0], k.shape[0] + 1)
-    ax1 = np.linspace(0, tsc.shape[1], k.shape[1] + 1)
     B_old = np.zeros([tsc.shape[0], tsc.shape[1], nk])
     for ii in np.arange(k.shape[0]):
         for jj in np.arange(k.shape[1]):
-            B_old[int(ax0[ii]):int(ax0[ii + 1]), int(ax1[jj]):int(ax1[jj + 1]), :] = kudryavtsev05(
-                k[ii, jj, :].reshape(nk, 1), u_10[ii, jj], fetch, azimuth)[:, ind][:, 0] * np.ones(
-                [int(tsc.shape[0] / k.shape[0]), int(tsc.shape[1] / k.shape[1]), nk])
+            B_old[ii, jj, :] = kudryavtsev05(k[ii, jj, :].reshape(nk, 1), u_10[ii, jj], fetch, azimuth)[:, ind][:, 0]
     B_new = B_old * (1 + np.abs(T))
     return B_old, B_new
-
