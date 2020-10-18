@@ -2,6 +2,7 @@ import numpy as np
 from NRCS import constants as const
 from NRCS.spec import kudryavtsev05
 from NRCS.spec.kudryavtsev05 import fv
+from NRCS.model.Bragg_scattering import MSS
 from NRCS.modulation import Spectrum
 from NRCS.modulation.Spectrum import wn_exp, wind_exp, sample_back
 
@@ -28,6 +29,23 @@ def Trans_func(k, K, u_10, fetch, azimuth, divergence):
     T = c_tau * k_hat ** (-3 / 2) * mk * fv(u_10) * divergence / (const.g*(
                 1 + 1j * c_tau * k_hat ** (-2) * K_hat))
     return T
+
+def CPBr_new(kr, K, theta, azimuth, wind, ind, fetch, divergence):
+    # [Kudryavtsev, 2019] equation A1c
+    nphi = theta.shape[0]
+    eps_sin = np.sqrt(const.epsilon_sw-np.sin(theta)**2)
+    Gvv = np.cos(theta)**2*(const.epsilon_sw-1)*(const.epsilon_sw*(1+np.sin(theta)**2) - np.sin(theta)**2) / (const.epsilon_sw*np.cos(theta)+eps_sin)**2
+    Ghh = np.cos(theta)**2*(const.epsilon_sw-1)/(np.cos(theta)+eps_sin)**2
+    G = np.abs(Gvv-Ghh)**2
+    kbr = 2*kr*np.sin(theta)
+    sn2 = MSS(kbr, wind, fetch)
+    Bkdir = np.zeros(wind.shape[0], wind.shape[1])
+    for ii in np.arange(wind.shape[0]):
+        for jj in np.arange(wind.shape[1]):
+            T = Trans_func(kbr[:, 0], K[ii, jj], wind[ii, jj], fetch, azimuth, divergence[ii, jj]).reshape(nphi,1)
+            Bkdir[ii, jj] = (kudryavtsev05(kbr.reshape(nphi, 1), wind[ii, jj], fetch, azimuth)*(1+abs(T)))[jj, ind]
+    Brcp = np.pi * G * sn2 * Bkdir/(np.tan(theta)**4 * np.sin(theta)**2)
+    return Brcp
 
 def Br_new(k, K, kr, theta, azimuth, u_10, fetch, wind_dir, ind_pi,tsc, polarization):
     """
