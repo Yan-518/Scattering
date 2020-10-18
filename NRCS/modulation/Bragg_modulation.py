@@ -47,7 +47,7 @@ def CPBr_new(kr, K, theta, azimuth, wind, ind, fetch, divergence):
     Brcp = np.pi * G * sn2 * Bkdir/(np.tan(theta)**4 * np.sin(theta)**2)
     return Brcp
 
-def Br_new(k, K, kr, theta, azimuth, u_10, fetch, wind_dir, ind_pi,tsc, polarization):
+def Br_new(k, K, kr, theta, azimuth, u_10, fetch, wind_dir, ind_pi, tsc, polarization):
     """
     :param k:
     :param kr:
@@ -57,9 +57,6 @@ def Br_new(k, K, kr, theta, azimuth, u_10, fetch, wind_dir, ind_pi,tsc, polariza
     :param fetch:
     :return:
     """
-    # if polarization == 'VH':
-    #     Br = CPBragg(kr, theta, azimuth, u_10, fetch, spec_name)
-    #     return Br.T
 
     nk = k.shape[0]
     # divergence of the sea surface current
@@ -69,6 +66,10 @@ def Br_new(k, K, kr, theta, azimuth, u_10, fetch, wind_dir, ind_pi,tsc, polariza
 
     # wind direction index
     ind = np.where(np.degrees(azimuth) == wind_dir)[0]
+
+    if polarization == 'VH':
+        Br = CPBr_new(kr, K, theta, azimuth, wind, ind, fetch, divergence)
+        return Br
 
     # # Sea surface slope in the direction of incidence angle
     ni2 = ni2_func(k, K, u_10, fetch, azimuth, tsc, wind_dir)
