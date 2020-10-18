@@ -11,9 +11,15 @@ def MSS_em(K, u_10, tsc):
     U = fv(u_10)
     return -cs * divergence / (U * np.sqrt(const.ky * K))
 
+# def MSS_contrasts(k, K, u_10, fetch, azimuth, tsc, wind_dir):
+#     B_old, B_new = Spectrum(k, K, u_10, fetch, azimuth, tsc, wind_dir)
+#     k_re, wind = sample_back(k, u_10, tsc)
+#     s2_new = np.trapz(B_new / k_re, k_re, axis=2)
+#     s2_old = np.trapz(B_old / k_re, k_re, axis=2)
+#     return (s2_new - s2_old) / s2_old
+
 def MSS_contrasts(k, K, u_10, fetch, azimuth, tsc, wind_dir):
     B_old, B_new = Spectrum(k, K, u_10, fetch, azimuth, tsc, wind_dir)
-    k_re, wind = sample_back(k, u_10, tsc)
-    s2_new = np.trapz(B_new / k_re, k_re, axis=2)
-    s2_old = np.trapz(B_old / k_re, k_re, axis=2)
+    s2_new = np.trapz(B_new / k, k, axis=2)
+    s2_old = np.trapz(B_old / k, k, axis=2)
     return (s2_new - s2_old) / s2_old
