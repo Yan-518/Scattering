@@ -39,7 +39,7 @@ def CPBr_new(kr, K, theta, azimuth, wind, ind, fetch, divergence):
     G = np.abs(Gvv-Ghh)**2
     kbr = 2*kr*np.sin(theta)
     sn2 = MSS(kbr, wind, fetch)
-    Bkdir = np.zeros(wind.shape[0], wind.shape[1])
+    Bkdir = np.zeros([wind.shape[0], wind.shape[1]])
     for ii in np.arange(wind.shape[0]):
         for jj in np.arange(wind.shape[1]):
             T = Trans_func(kbr[:, 0], K[ii, jj], wind[ii, jj], fetch, azimuth, divergence[ii, jj]).reshape(nphi,1)
