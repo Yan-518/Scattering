@@ -6,7 +6,7 @@ setup(
     packages=['NRCS',
               'NRCS.bistatic',
               'NRCS.constants',
-#               'NRCS.current',
+              'NRCS.current',
               'NRCS.LUT',
               'NRCS.model',
               'NRCS.spec',
