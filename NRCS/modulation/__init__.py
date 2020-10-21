@@ -4,3 +4,7 @@ from .NRCS_contrasts import *
 from .WB_contrasts import *
 from .Bragg_modulation import *
 from .Wavebreaking_modulation import *
+from .GoM_spec import *
+from .GoM_mss import *
+from .GoM_brmo import *
+from .GoM_wbmo import *
