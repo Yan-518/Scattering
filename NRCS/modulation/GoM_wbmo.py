@@ -5,7 +5,7 @@ from NRCS.spec.kudryavtsev05 import param
 from NRCS.spec.kudryavtsev05 import spec_peak
 from NRCS.modulation.Bragg_modulation import Trans_func
 
-def Wavebreaking_modulation(kr, K, theta, azimuth, u_10, fetch, wind_dir, div, polarization):
+def GoM_wbmo(kr, K, theta, azimuth, u_10, fetch, wind_dir, div, polarization):
     """
     :param kp:
     :param kr:
