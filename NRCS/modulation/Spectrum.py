@@ -61,7 +61,7 @@ def Trans(k, K, u_10, fetch, azimuth, tsc):
     # divergence of the sea surface current
     divergence = np.gradient(tsc[:, :, 0], 1e3, axis=1) + np.gradient(tsc[:, :, 1], 1e3, axis=0)
     # transfer function
-    T = c_tau * k_hat ** (-3 / 2) * mk * fv(wind)[:, :, None] * divergence[:, :, None] / (const.g*(
+    T = c_tau * k_hat ** (-3 / 2) * mk * fv(u_10)[:, :, None] * divergence[:, :, None] / (const.g*(
                 1 + 1j * c_tau * k_hat ** (-2) * K_hat[:, :, None]))
     return T
 
