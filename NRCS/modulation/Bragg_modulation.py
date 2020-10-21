@@ -12,7 +12,7 @@ def ni2_func(kr, k, K, u_10, fetch, azimuth, tsc, wind_dir):
     ni2 = np.zeros([u_10.shape[0],u_10.shape[1]])
     for ii in np.arange(u_10.shape[0]):
         for jj in np.arange(u_10.shape[1]):
-            kk = u_10[ii, jj]
+            kk = k[ii, jj, :]
             ni2[ii, jj] = np.trapz(B_new[ii,jj,:][kk >= kd] / kk[kk >= kd], kk[kk >= kd])
     return ni2
 
