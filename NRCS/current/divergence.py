@@ -20,7 +20,7 @@ def divergence(sst, lat, lon, wind_speed, K, phi, phi_w, s):
 
     ## compute the divergence
     T = np.fft.fft2(sst) # sst in fourier space
-    V = fv(wind_speed)  # friction velocity in the water
+    V = np.sqrt(const.rho_air/const.rho_water)*fv(wind_speed)  # friction velocity in the water
 
     diver = 1j * const.alpha * const.g * V * (s * np.sin(phi_w - phi) + 1j * const.yita ** (3 / 4) * const.nb ** 0.5 * V * K / abs(const.f)) * K ** 2 * T / (const.yita ** 0.25 * const.nb ** 0.5 * const.f ** 2)
 
