@@ -7,9 +7,9 @@ from NRCS.modulation import const_spec
 def const_ni2_func(kr, k, K, u_10, fetch, azimuth, div, wind_dir):
     B_old, B_new = const_spec(k, K, u_10, fetch, azimuth, div, wind_dir)
     kd = const.d*kr
-    ni2 = np.zeros([u_10.shape[0],u_10.shape[1]])
-    for ii in np.arange(u_10.shape[0]):
-        for jj in np.arange(u_10.shape[1]):
+    ni2 = np.zeros([div.shape[0],div.shape[1]])
+    for ii in np.arange(div.shape[0]):
+        for jj in np.arange(div.shape[1]):
             ni2[ii, jj] = np.trapz(B_new[ii,jj,:][k >= kd] / k[k >= kd], k[k >= kd])
     return ni2
 
