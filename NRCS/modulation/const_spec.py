@@ -18,7 +18,7 @@ def const_Trans(k, K, u_10, fetch, azimuth, div):
     return T
 
 def const_spec(k, K, u_10, fetch, azimuth, div, wind_dir):
-    nk = k.shape[2]
+    nk = k.shape[0]
     T = const_Trans(k, K, u_10, fetch, azimuth, div)
     ind = np.where(np.degrees(azimuth) == wind_dir)[0]
     B_old = kudryavtsev05(k.reshape(nk, 1), u_10, fetch, azimuth)[:, ind][:, 0]
