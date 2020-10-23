@@ -5,7 +5,7 @@ from NRCS.spec.kudryavtsev05 import fv
 from NRCS.modulation.Spectrum import wind_exp, wn_dless_single, wn_exp
 
 def const_Trans(k, K, u_10, fetch, azimuth, div):
-    nk = k.shape[2]
+    nk = k.shape[0]
     c_beta = 0.04  # wind wave growth parameter
     k_hat = wn_dless_single(k, u_10)
     K_hat = K * fv(u_10) ** 2 / const.g
