@@ -27,7 +27,7 @@ def wind_exp(k):
             m_sta.append(1.1 * kk ** 0.742)
         else:
             m_sta.append(5.61 - 1.19 * kk + 0.118 * kk ** 2)
-    return m_sta
+    return np.asarray(m_sta)
 
 def wn_dless(k, u_10):
     #     dimensionless wave number of wind waves
