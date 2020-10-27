@@ -57,7 +57,7 @@ def Br_new(k, K, kr, theta, azimuth, u_10, fetch, wind_dir, ind_pi, tsc, polariz
     :return:
     """
 
-    nk = k.shape[0]
+    nk = k.shape[2]
     # divergence of the sea surface current
     divergence = np.gradient(tsc[:, :, 0], 1e3, axis=1) + np.gradient(tsc[:, :, 1], 1e3, axis=0)
 
