@@ -62,7 +62,7 @@ def eq_br_mo(k, K, kr, theta_eq, bist_ang_az, eq_azi, wind_dir, u_10, fetch, div
             # compute the wave number for bistatic geometry
             kbr = 2 * kr * np.sin(theta_l) * np.cos(bist_ang_az[jj]/2)
             kkbr = np.sort(kbr)
-            T = Trans_func(kkbr[:, 0], K[ii, jj], u_10[ii, jj], fetch, azimuth, div[ii, jj])[np.argsort(kbr)]
+            T = Trans_func(kkbr[:, 0], K[ii, jj], u_10[ii, jj], fetch, azimuth, div[ii, jj])[np.argsort(kbr[:,0])]
             Skb = B_int_single(kkbr.reshape(nnk, 1), u_10[ii, jj], fetch, eq_azi[jj])[np.argsort(kbr)[:,0], :] * (1+abs(T)) / kbr.reshape(nnk,1) ** 4
             Skb_pi = B_int_single(kkbr.reshape(nnk, 1), u_10[ii, jj], fetch, np.pi + eq_azi[jj])[np.argsort(kbr)[:,0], :] * (1+abs(T)) / kbr.reshape(nnk, 1) ** 4
             Skb_r = (Skb + Skb_pi) / 2  # Kudryavtsev 2003a equation 2
