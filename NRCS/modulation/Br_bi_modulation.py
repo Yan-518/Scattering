@@ -31,7 +31,7 @@ def eq_br_mo(k, K, kr, theta_eq, bist_ang_az, eq_azi, wind_dir, u_10, fetch, div
     :return:
     """
 
-    nk = k.shape[0]
+    nk = k.shape[2]
 
     # Set azimuth to compute transfer function
     azimuth = np.linspace(-np.pi, np.pi, 37)
