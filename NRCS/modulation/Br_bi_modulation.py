@@ -37,9 +37,7 @@ def eq_br_mo(k, K, kr, theta_eq, bist_ang_az, eq_azi, wind_dir, u_10, fetch, div
     azimuth = np.linspace(-np.pi, np.pi, 37)
 
     # # Sea surface slope in the direction of incidence angle
-    phi_inc = np.linspace(-np.pi, np.pi, 37*2)# in radians wave direction relative to the incidence plane
-
-    ni2 = GoM_ni2_func(kr, k, K, u_10, fetch, phi_inc, div, wind_dir)
+    ni2 = GoM_ni2_func(kr, k, K, u_10, fetch, azimuth, div, wind_dir)
 
     nn = 89 * 2 * np.pi / 180
     ni = (np.arange(nk) * nn / nk).reshape(1, nk) - nn / 2
