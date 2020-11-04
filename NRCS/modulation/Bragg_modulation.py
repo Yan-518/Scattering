@@ -93,7 +93,7 @@ def Br_new(k, K, kr, theta, azimuth, u_10, fetch, wind_dir, ind_pi, tsc, polariz
             # geometric scattering coefficients [Plant 1997] equation 5,6
             eps_sin = np.sqrt(const.epsilon_sw-np.sin(theta_l)**2)
             kkbr = np.sort(kbr)
-            T = Trans_func(kkbr[:, 0], K[ii, jj], u_10[ii, jj], fetch, azimuth, divergence[ii, jj])[np.argsort(kbr)]
+            T = Trans_func(kkbr[:, 0], K[ii, jj], u_10[ii, jj], fetch, azimuth, divergence[ii, jj])[np.argsort(kbr[:,0])]
             spec_Skk = kudryavtsev05(kkbr.reshape(nnk, 1), u_10[ii,jj], fetch, azimuth)[np.argsort(kbr)[:,0], :] * (1+abs(T)) / kbr.reshape(nnk, 1) ** 4
             Skb_r = (spec_Skk[:, ind] + spec_Skk[:, ind_pi]) / 2
             if polarization == 'VV':
