@@ -25,7 +25,7 @@ def GoM_brmo(k, K, kr, theta, azimuth, u_10, fetch, wind_dir, ind_pi, div, polar
     :return:
     """
 
-    nk = k.shape[0]
+    nk = k.shape[2]
 
     # wind direction index
     ind = np.where(np.degrees(azimuth) == wind_dir)[0]
