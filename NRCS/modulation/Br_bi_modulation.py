@@ -50,7 +50,7 @@ def eq_br_mo(k, K, kr, theta_eq, bist_ang_az, eq_azi, wind_dir, u_10, fetch, div
         for jj in np.arange(ni2.shape[1]):
             P = np.exp(-0.5 * (ni - np.mean(ni)) ** 2 / ni2[ii, jj]) / np.sqrt(2 * np.pi * ni2[ii, jj])
             #  the range of the sea surface slope
-            angle_index = np.logical_and(-3 * 180 * np.arctan(np.sqrt(ni2)) / np.pi < np.arctan(ni) * 180 / np.pi, np.arctan(ni) * 180 / np.pi < 3 * 180 * np.arctan(np.sqrt(ni2)) / np.pi)
+            angle_index = np.logical_and(-3 * 180 * np.arctan(np.sqrt(ni2[ii,jj])) / np.pi < np.arctan(ni) * 180 / np.pi, np.arctan(ni) * 180 / np.pi < 3 * 180 * np.arctan(np.sqrt(ni2[ii,jj])) / np.pi)
             P = P[angle_index]
             nini = ni[angle_index]
             nnk = nini.shape[0]
