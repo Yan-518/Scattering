@@ -9,11 +9,11 @@ from NRCS.modulation.GoM_brmo import GoM_ni2_func
 
 def B_int_single(k, u_10, fetch, azi):
     if azi > np.pi:
-        azimuth = np.linspace(0, 2 * np.pi, 361)# 1024
+        azimuth = np.linspace(0, 2 * np.pi, 721)# 1024
     elif azi < -np.pi:
-        azimuth = np.linspace(-2 * np.pi, 0, 361)
+        azimuth = np.linspace(-2 * np.pi, 0, 721)
     else:
-        azimuth = np.linspace(-np.pi, np.pi, 361)  # 1024
+        azimuth = np.linspace(-np.pi, np.pi, 721)  # 1024
     B = kudryavtsev05(k, u_10, fetch, azimuth)
     f = interp2d(azimuth, k[:, 0], B, kind='cubic')
     return f(azi, k[:, 0])
