@@ -12,3 +12,5 @@ from .const_spec import *
 from .const_mss import *
 from .const_brmo import *
 from .const_wbmo import *
+from .Br_bi_modulation import *
+from .Wb_bi_modulation import *
