@@ -44,7 +44,7 @@ def eq_wb_mo(kr, K, theta_eq, eq_azi, u_10, fetch, div):
             lamda_k = np.trapz(lamda_k, KK)
             q[ii, jj] = const.cq * lamda_k
             Awb = np.trapz(np.cos(phi1 - eq_azi[jj]) * lamda, phi1) / lamda_k
-            WB[ii, jj] = wb0 * (1 + Mwb * const.theta_wb * Awb)
+            WB[ii, jj] = wb0[jj] * (1 + Mwb[jj] * const.theta_wb * Awb)
     return WB, q
 
 def Wb_bi_modulation(kr, K, theta_i, theta_s, theta_eq, bist_ang_az, eq_azi, u_10, fetch, div, polarization, inc_polar, re_polar, sat):
