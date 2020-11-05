@@ -14,3 +14,5 @@ from .const_brmo import *
 from .const_wbmo import *
 from .Br_bi_modulation import *
 from .Wb_bi_modulation import *
+from .const_bi_br import *
+from .const_bi_wb import *
