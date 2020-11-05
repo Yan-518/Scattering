@@ -15,8 +15,8 @@ def B_int_single(k, u_10, fetch, azi):
     else:
         azimuth = np.linspace(-np.pi, np.pi, 721)  # 1024
     B = kudryavtsev05(k, u_10, fetch, azimuth)
-    f = interp2d(azimuth, k[:, 0], B, kind='cubic')
-    return f(azi, k[:, 0])
+    f = interp2d(azimuth, k, B, kind='cubic')
+    return f(azi, k)
 
 def eq_br_mo(k, K, kr, theta_eq, bist_ang_az, eq_azi, wind_dir, u_10, fetch, div, polarization):
     """
