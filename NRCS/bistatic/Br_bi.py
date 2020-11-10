@@ -116,14 +116,16 @@ def eq_br(k, kr, theta_eq, bist_ang_az, eq_azi, u_10, fetch, spec_name, polariza
     sort_ind = np.argsort(eq_azi)
     sort_azi = np.sort(eq_azi)
     if spec_name == 'kudryavtsev05':
-        Skb = np.zeros([nnk, nphi])
-        Skb_pi = np.zeros([nnk, nphi])
+        Skb_r = np.zeros([nnk,nphi])
+#         Skb = np.zeros([nnk, nphi])
+#         Skb_pi = np.zeros([nnk, nphi])
         for nn in np.arange(nazi):
             kkbr = np.sort(kbr[:, nn]).reshape(nnk, 1)
             spec_Skk1 = B_int(kkbr, u_10, fetch, sort_azi)[:, sort_ind][np.argsort(kbr[:, nn]), :] / kbr[:, nn].reshape(nnk,1) ** 4
-            Skb[:, nn] = spec_Skk1[:, nn]
+#             Skb[:, nn] = spec_Skk1[:, nn]
             spec_Skk2 = B_int(kkbr, u_10, fetch, np.pi + sort_azi)[:, sort_ind][np.argsort(kbr[:, nn]), :] / kbr[:, nn].reshape(nnk, 1) ** 4
-            Skb_pi[:, nn] = spec_Skk2[:, nn]
+#             Skb_pi[:, nn] = spec_Skk2[:, nn]
+            Skb_r[:, nn] = (spec_Skk1[:, nn] + spec_Skk2[:, nn]) / 2
             # spec_Skk1 = specf(kbr[:, nn].reshape(nnk, 1), u_10, fetch, sort_azi) / kbr[:, nn].reshape(nnk, 1) ** 4
 #             spec_Skk1 = B_int(kbr[:, nn].reshape(nnk, 1), u_10, fetch, sort_azi)[:, sort_ind] / kbr[:, nn].reshape(nnk, 1) ** 4
 #             Skb[:, nn] = spec_Skk1[:, nn]
@@ -135,7 +137,8 @@ def eq_br(k, kr, theta_eq, bist_ang_az, eq_azi, u_10, fetch, spec_name, polariza
         spreadf = spread.models[spec_name]
         Skb = Sk * spreadf(kbr, eq_azi, u_10, fetch) / kbr  # equation 45
         Skb_pi = Sk * spreadf(kbr, eq_azi + np.pi, u_10, fetch) / kbr  # equation 45
-    Skb_r = (Skb + Skb_pi) / 2  # Kudryavtsev 2003a equation 2
+        Skb_r = (Skb + Skb_pi) / 2
+#     Skb_r = (Skb + Skb_pi) / 2  # Kudryavtsev 2003a equation 2
 
     # pure Bragg scattering NRCS
     br0 = 16 * np.pi * kr ** 4 * G * Skb_r
