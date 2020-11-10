@@ -9,11 +9,11 @@ from stereoid.oceans.bistatic_pol import elfouhaily
 
 def B_int(k, u_10, fetch, azi):
     if azi.max() > np.pi:
-        azimuth = np.linspace(0, 2 * np.pi, 721)# 1024
+        azimuth = np.linspace(0, 2 * np.pi, 361)# 1024
     elif azi.min() < -np.pi:
-        azimuth = np.linspace(-2 * np.pi, 0, 721)
+        azimuth = np.linspace(-2 * np.pi, 0, 361)
     else:
-        azimuth = np.linspace(-np.pi, np.pi, 721)  # 1024
+        azimuth = np.linspace(-np.pi, np.pi, 361)  # 1024
     B = kudryavtsev05(k, u_10, fetch, azimuth)
     f = interp2d(azimuth, k[:, 0], B, kind='linear')
     return f(azi, k[:, 0])
